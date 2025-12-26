@@ -33,6 +33,16 @@
         }
         .stat-input:focus { outline: none; border-color: #6366f1; background-color: #0f172a; }
         
+        /* Remove native spinners */
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
         .selected-card {
             border-color: #818cf8 !important;
             background-color: #1e1b4b !important;
@@ -59,6 +69,22 @@
         .tab-btn.active {
             @apply text-indigo-400 border-indigo-500 bg-indigo-500/10;
         }
+
+        .adjust-btn {
+            @apply w-6 h-full flex items-center justify-center bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white rounded transition-colors select-none text-lg leading-none cursor-pointer border border-slate-700;
+        }
+        .adjust-btn:active {
+            @apply bg-slate-600;
+        }
+
+        /* Cap Input Styling - Explicit Dark Box Style */
+        .cap-input {
+            @apply bg-slate-800 text-indigo-300 w-10 text-center text-[10px] font-bold focus:outline-none font-mono py-0.5 border border-slate-600 rounded focus:border-indigo-500 focus:text-indigo-400 cursor-text transition-colors;
+        }
+        .cap-wrapper {
+            @apply flex items-center gap-1.5;
+        }     
+
     </style>
 </head>
 <body class="h-screen flex flex-col">
@@ -68,9 +94,6 @@
         <div class="flex justify-between items-center px-4 h-14">
             <div class="flex items-center gap-3">
                 <div class="bg-indigo-600 p-1.5 rounded-lg shadow-lg shadow-indigo-500/30">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
                 </div>
                 <div>
                     <h1 class="text-sm font-bold text-white tracking-wide">FF14 分隊特訓終極套件</h1>
@@ -79,59 +102,103 @@
             
             <!-- Tab Navigation -->
             <div class="flex space-x-1 h-full items-end">
-                <button onclick="switchTab('team')" id="tab-btn-team" class="tab-btn active">
-                    綜合戰略 (隊伍+特訓)
+                <button onclick="switchTab('team')" id="tab-btn-team" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded text-sm shadow-lg active:scale-95 flex items-center justify-center gap-2 border border-indigo-500/50">
+                    綜合戰略
                 </button>
-                <button onclick="switchTab('solo')" id="tab-btn-solo" class="tab-btn">
-                    單獨推演 (純數值)
+                <button onclick="switchTab('solo')" id="tab-btn-solo" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded text-sm shadow-lg active:scale-95 flex items-center justify-center gap-2 border border-emerald-500/50">
+                    單獨推演
                 </button>
             </div>
         </div>
     </header>
 
     <!-- CONTENT AREA -->
-    <div class="flex-1 relative overflow-hidden">
+    <!-- overflow-auto allows horizontal scroll for the whole view -->
+    <div class="flex-1 relative overflow-auto bg-slate-950">
         
         <!-- TAB 1: TEAM STRATEGY -->
         <div id="view-team" class="absolute inset-0 flex transition-opacity duration-300 min-w-[1024px]">
             
-            <!-- 1. Config Pane -->
-            <aside class="w-72 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 overflow-y-auto z-10 custom-scrollbar">
-                <div class="p-4 border-b border-slate-800">
+            <!-- 1. Config Pane (Removed sticky, Unified Scroll) -->
+            <!-- Note: overflow-y-auto here handles the vertical scroll for the WHOLE sidebar -->
+            <aside class="w-72 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 overflow-y-auto z-10 custom-scrollbar pb-6 shadow-xl">
+                
+                <!-- Training Status -->
+                <div class="p-4 border-b border-slate-800 shrink-0">
                     <div class="flex justify-between items-center mb-2">
                         <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">1. 當前特訓狀態</h2>
-                        <span id="t-curr-total" class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-500 border border-slate-700">Total: 280</span>
+                        <!-- Upper Limit Input (Updated) -->
+                        <div id="t-curr-wrapper" class="cap-wrapper">
+                            <span id="t-curr-sum" class="text-[10px] text-slate-500 font-mono">280</span>
+                            <span class="text-[10px] text-slate-600 font-bold">/</span>
+                            <input type="number" id="t-curr-cap" class="r-level bg-slate-900 text-white text-[10px] rounded border border-slate-600 w-8 text-center" value="280" step="20" title="點擊修改上限">
+                        </div>
                     </div>
-                    <div class="space-y-2">
-                        <div class="flex items-center gap-2"><label class="text-xs text-blue-400 w-8 font-bold">體能</label><input type="number" id="t-curr-phy" class="stat-input" value="80"></div>
-                        <div class="flex items-center gap-2"><label class="text-xs text-green-400 w-8 font-bold">心理</label><input type="number" id="t-curr-men" class="stat-input" value="80"></div>
-                        <div class="flex items-center gap-2"><label class="text-xs text-amber-400 w-8 font-bold">戰術</label><input type="number" id="t-curr-tac" class="stat-input" value="120"></div>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2 h-8">
+                            <img src="./img/train_phy.png" alt="體能" class="h-9 w-auto object-contain rounded shadow-lg shadow-indigo-500/30 border border-slate-700/50">
+                            <button class="adjust-btn" onclick="adjustVal('t-curr-phy', -20)">-</button>
+                            <input type="number" id="t-curr-phy" class="stat-input h-full" value="80" step="20">
+                            <button class="adjust-btn" onclick="adjustVal('t-curr-phy', 20)">+</button>
+                        </div>
+                        <div class="flex items-center gap-2 h-8">
+                            <img src="./img/train_men.png" class="h-9 w-auto object-contain rounded shadow-lg shadow-indigo-500/30 border border-slate-700/50" alt="心智">
+                            <button class="adjust-btn" onclick="adjustVal('t-curr-men', -20)">-</button>
+                            <input type="number" id="t-curr-men" class="stat-input h-full" value="80" step="20">
+                            <button class="adjust-btn" onclick="adjustVal('t-curr-men', 20)">+</button>
+                        </div>
+                        <div class="flex items-center gap-2 h-8">
+                            <img src="./img/train_tac.png" class="h-9 w-auto object-contain rounded shadow-lg shadow-indigo-500/30 border border-slate-700/50" alt="戰術">
+                            <button class="adjust-btn" onclick="adjustVal('t-curr-tac', -20)">-</button>
+                            <input type="number" id="t-curr-tac" class="stat-input h-full" value="120" step="20">
+                            <button class="adjust-btn" onclick="adjustVal('t-curr-tac', 20)">+</button>
+                        </div>
                     </div>
                 </div>
-                <div class="p-4 border-b border-slate-800">
+
+                <!-- Mission Requirements -->
+                <div class="p-4 border-b border-slate-800 shrink-0">
                     <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">2. 任務需求</h2>
-                    <div class="space-y-2">
-                        <div class="flex items-center gap-2"><label class="text-xs text-blue-400 w-8 font-bold">體能</label><input type="number" id="t-miss-phy" class="stat-input" value="315"></div>
-                        <div class="flex items-center gap-2"><label class="text-xs text-green-400 w-8 font-bold">心理</label><input type="number" id="t-miss-men" class="stat-input" value="325"></div>
-                        <div class="flex items-center gap-2"><label class="text-xs text-amber-400 w-8 font-bold">戰術</label><input type="number" id="t-miss-tac" class="stat-input" value="340"></div>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2 h-8">
+                            <img src="./img/train_phy.png" class="h-9 w-auto object-contain rounded shadow-lg shadow-indigo-500/30 border border-slate-700/50" alt="體能">
+                            <button class="adjust-btn" onclick="adjustVal('t-miss-phy', -5)">-</button>
+                            <input type="number" id="t-miss-phy" class="stat-input h-full" value="315" step="5">
+                            <button class="adjust-btn" onclick="adjustVal('t-miss-phy', 5)">+</button>
+                        </div>
+                        <div class="flex items-center gap-2 h-8">
+                            <img src="./img/train_men.png" class="h-9 w-auto object-contain rounded shadow-lg shadow-indigo-500/30 border border-slate-700/50" alt="心智">
+                            <button class="adjust-btn" onclick="adjustVal('t-miss-men', -5)">-</button>
+                            <input type="number" id="t-miss-men" class="stat-input h-full" value="325" step="5">
+                            <button class="adjust-btn" onclick="adjustVal('t-miss-men', 5)">+</button>
+                        </div>
+                        <div class="flex items-center gap-2 h-8">
+                            <img src="./img/train_tac.png" class="h-9 w-auto object-contain rounded shadow-lg shadow-indigo-500/30 border border-slate-700/50" alt="戰術">
+                            <button class="adjust-btn" onclick="adjustVal('t-miss-tac', -5)">-</button>
+                            <input type="number" id="t-miss-tac" class="stat-input h-full" value="340" step="5">
+                            <button class="adjust-btn" onclick="adjustVal('t-miss-tac', 5)">+</button>
+                        </div>
                     </div>
                 </div>
-                <div class="p-4 flex-1 flex flex-col min-h-0">
+
+                <!-- Roster (No internal scroll) -->
+                <div class="p-4 shrink-0">
                     <div class="flex justify-between items-center mb-2">
                         <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">3. 隊員名冊</h2>
                         <span class="text-[10px] text-slate-600">勾選必帶</span>
                     </div>
-                    <div id="t-roster-list" class="space-y-2 overflow-y-auto pr-1 pb-4 flex-1"></div>
-                    <button onclick="calculateTeamStrategy()" class="mt-2 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded text-sm shadow-lg active:scale-95 flex items-center justify-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" /></svg>
+                    <!-- This div expands naturally -->
+                    <div id="t-roster-list" class="space-y-2"></div>
+                    
+                    <button onclick="calculateTeamStrategy()" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded text-sm shadow-lg active:scale-95 flex items-center justify-center gap-2 border border-indigo-500/50">
                         計算最佳方案
                     </button>
                 </div>
             </aside>
 
             <!-- 2. Solutions Pane -->
-            <div class="w-80 bg-slate-900/50 border-r border-slate-800 flex flex-col shrink-0 z-0">
-                <div class="p-3 border-b border-slate-800 bg-slate-900/80 backdrop-blur shrink-0 flex justify-between items-end">
+            <div class="w-80 bg-slate-900/50 border-r border-slate-800 flex flex-col shrink-0 z-0 custom-scrollbar pb-6">
+                <div class="p-3 border-b border-slate-800 bg-slate-900/80 backdrop-blur shrink-0 flex justify-between items-end sticky top-0 z-10">
                     <h2 class="text-sm font-bold text-white">方案列表</h2>
                     <span id="t-combo-count" class="text-[10px] text-slate-500">等待計算</span>
                 </div>
@@ -141,11 +208,11 @@
             </div>
 
             <!-- 3. Plan Pane -->
-            <main class="flex-1 bg-slate-950 flex flex-col min-w-0">
-                <div class="p-4 border-b border-slate-800 bg-slate-900 shrink-0 flex justify-between items-center">
+            <main class="flex-1 bg-slate-950 flex flex-col min-w-0 pb-6">
+                <div class="p-4 border-b border-slate-800 bg-slate-900 shrink-0 flex justify-between items-center sticky top-0 z-10">
                     <h2 class="text-sm font-bold text-white flex items-center gap-2">執行步驟詳情</h2>
                 </div>
-                <div id="t-plan-container" class="flex-1 overflow-y-auto p-8 relative">
+                <div id="t-plan-container" class="flex-1 overflow-y-auto p-8 relative custom-scrollbar">
                     <div class="absolute inset-0 flex flex-col items-center justify-center text-slate-700 opacity-60 pointer-events-none">
                         <p>請選擇左側方案</p>
                     </div>
@@ -154,51 +221,101 @@
         </div>
 
         <!-- TAB 2: SOLO SIM -->
-        <div id="view-solo" class="absolute inset-0 flex transition-opacity duration-300 opacity-0 pointer-events-none min-w-[800px]">
+        <div id="view-solo" class="absolute inset-0 flex transition-opacity duration-300 opacity-0 pointer-events-none min-w-[1024px]">
             
             <!-- 1. Config Pane -->
-            <aside class="w-80 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 overflow-y-auto z-10 shadow-xl p-6 space-y-6">
-                <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
-                    <div class="flex justify-between items-center mb-3">
+            <aside class="w-72 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 overflow-y-auto z-10 shadow-xl p-4 space-y-6 pb-6">
+                
+                <!-- Start Stats -->
+                <div class="p-4 border-b border-slate-800 shrink-0">
+                    <div class="flex justify-between items-center mb-2">
                         <h2 class="text-xs font-bold text-blue-400 uppercase tracking-wider">起點 (Start)</h2>
-                        <span id="s-curr-total" class="text-[10px] text-slate-500">Total: 280</span>
+                        <div id="s-curr-wrapper" class="cap-wrapper">
+                            <span id="s-curr-sum" class="text-[10px] text-slate-500 font-mono">280</span>
+                            <span class="text-[10px] text-slate-600 font-bold">/</span>
+                            <input type="number" id="s-common-cap" class="r-level bg-slate-900 text-white text-[10px] rounded border border-slate-600 w-8 text-center" value="280" step="20" title="修改總點數上限 (連動目標)">
+                        </div>
                     </div>
                     <div class="space-y-3">
-                        <div class="flex items-center gap-2"><label class="text-xs text-slate-400 w-8 text-right">體能</label><input type="number" id="s-curr-phy" class="stat-input" value="80"></div>
-                        <div class="flex items-center gap-2"><label class="text-xs text-slate-400 w-8 text-right">心理</label><input type="number" id="s-curr-men" class="stat-input" value="80"></div>
-                        <div class="flex items-center gap-2"><label class="text-xs text-slate-400 w-8 text-right">戰術</label><input type="number" id="s-curr-tac" class="stat-input" value="120"></div>
+                        <div class="flex items-center gap-2 h-8">
+                            <img src="./img/train_phy.png" class="h-9 w-auto object-contain rounded shadow-lg shadow-indigo-500/30 border border-slate-700/50" alt="體能">
+                            <button class="adjust-btn" onclick="adjustVal('s-curr-phy', -20)">-</button>
+                            <input type="number" id="s-curr-phy" class="stat-input h-full" value="80" step="20">
+                            <button class="adjust-btn" onclick="adjustVal('s-curr-phy', 20)">+</button>
+                        </div>
+                        <div class="flex items-center gap-2 h-8">
+                            <img src="./img/train_men.png" class="h-9 w-auto object-contain rounded shadow-lg shadow-indigo-500/30 border border-slate-700/50" alt="心智">
+                            <button class="adjust-btn" onclick="adjustVal('s-curr-men', -20)">-</button>
+                            <input type="number" id="s-curr-men" class="stat-input h-full" value="80" step="20">
+                            <button class="adjust-btn" onclick="adjustVal('s-curr-men', 20)">+</button>
+                        </div>
+                        <div class="flex items-center gap-2 h-8">
+                            <img src="./img/train_tac.png" class="h-9 w-auto object-contain rounded shadow-lg shadow-indigo-500/30 border border-slate-700/50" alt="戰術">
+                            <button class="adjust-btn" onclick="adjustVal('s-curr-tac', -20)">-</button>
+                            <input type="number" id="s-curr-tac" class="stat-input h-full" value="120" step="20">
+                            <button class="adjust-btn" onclick="adjustVal('s-curr-tac', 20)">+</button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="flex justify-center -my-2 opacity-30"><svg class="h-5 w-5 text-slate-400 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg></div>
-
-                <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
-                    <div class="flex justify-between items-center mb-3">
+                <!-- Target Stats -->
+                <div class="p-4 border-b border-slate-800 shrink-0">
+                    <div class="flex justify-between items-center mb-2">
                         <h2 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">目標 (Target)</h2>
-                        <span id="s-target-total" class="text-[10px] text-slate-500">Total: 280</span>
+                        <div id="s-target-wrapper" class="cap-wrapper">
+                            <span id="s-target-sum" class="text-[10px] text-slate-500 font-mono">280</span>
+                            <span class="text-[10px] text-slate-600 font-bold">/</span>
+                            <span id="s-target-cap-display" class="bg-slate-800 text-indigo-300 text-[10px] rounded border border-slate-600 w-10 text-center font-bold font-mono py-0.5">280</span>
+                        </div>
                     </div>
                     <div class="space-y-3">
-                        <div class="flex items-center gap-2"><label class="text-xs text-slate-400 w-8 text-right">體能</label><input type="number" id="s-target-phy" class="stat-input" value="80"></div>
-                        <div class="flex items-center gap-2"><label class="text-xs text-slate-400 w-8 text-right">心理</label><input type="number" id="s-target-men" class="stat-input" value="120"></div>
-                        <div class="flex items-center gap-2"><label class="text-xs text-slate-400 w-8 text-right">戰術</label><input type="number" id="s-target-tac" class="stat-input" value="80"></div>
+                        <div class="flex items-center gap-2 h-8">
+                            <img src="./img/train_phy.png" class="h-9 w-auto object-contain rounded shadow-lg shadow-indigo-500/30 border border-slate-700/50" alt="體能">
+                            <button class="adjust-btn" onclick="adjustVal('s-target-phy', -20)">-</button>
+                            <input type="number" id="s-target-phy" class="stat-input h-full" value="80" step="20">
+                            <button class="adjust-btn" onclick="adjustVal('s-target-phy', 20)">+</button>
+                        </div>
+                        <div class="flex items-center gap-2 h-8">
+                            <img src="./img/train_men.png" class="h-9 w-auto object-contain rounded shadow-lg shadow-indigo-500/30 border border-slate-700/50" alt="心智">
+                            <button class="adjust-btn" onclick="adjustVal('s-target-men', -20)">-</button>
+                            <input type="number" id="s-target-men" class="stat-input h-full" value="120" step="20">
+                            <button class="adjust-btn" onclick="adjustVal('s-target-men', 20)">+</button>
+                        </div>
+                        <div class="flex items-center gap-2 h-8">
+                            <img src="./img/train_tac.png" class="h-9 w-auto object-contain rounded shadow-lg shadow-indigo-500/30 border border-slate-700/50" alt="戰術">
+                            <button class="adjust-btn" onclick="adjustVal('s-target-tac', -20)">-</button>
+                            <input type="number" id="s-target-tac" class="stat-input h-full" value="80" step="20">
+                            <button class="adjust-btn" onclick="adjustVal('s-target-tac', 20)">+</button>
+                        </div>
                     </div>
                 </div>
 
-                <button onclick="calculateSoloPath()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 border border-emerald-500">
-                    <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-                    推演轉換路徑
-                </button>
+                <div class="p-4 shrink-0">
+                    <button onclick="calculateSoloPath()" class="mt-6 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded text-sm shadow-lg active:scale-95 flex items-center justify-center gap-2 border border-indigo-500/50">
+                        推演轉換路徑
+                    </button>
+                </div>
             </aside>
 
-            <!-- 2. Result Pane -->
-            <main class="flex-1 bg-slate-950 flex flex-col min-w-0">
-                <div class="p-4 border-b border-slate-800 bg-slate-900 shrink-0 flex justify-between items-center shadow-md z-10">
-                    <h2 class="text-sm font-bold text-white flex items-center gap-2">推演結果</h2>
+            <!-- 2. Result List (Middle Bar) -->
+            <div class="w-80 bg-slate-900/50 border-r border-slate-800 flex flex-col shrink-0 z-0 custom-scrollbar pb-6">
+                <div class="p-3 border-b border-slate-800 bg-slate-900/80 backdrop-blur shrink-0 flex justify-between items-end sticky top-0 z-10">
+                    <h2 class="text-sm font-bold text-white">推演結果</h2>
                     <div id="s-plan-status" class="text-xs text-slate-400">等待輸入...</div>
                 </div>
-                <div id="s-plan-container" class="flex-1 overflow-y-auto p-10 relative bg-slate-950">
+                <div id="s-results-list" class="flex-1 overflow-y-auto p-3 space-y-2">
+                     <div class="text-center text-slate-600 py-20 text-xs border-2 border-dashed border-slate-800 rounded-lg">請點擊左側「推演轉換路徑」</div>
+                </div>
+            </div>
+
+            <!-- 3. Result Details (Right Bar) -->
+            <main class="flex-1 bg-slate-950 flex flex-col min-w-0 pb-6">
+                <div class="p-4 border-b border-slate-800 bg-slate-900 shrink-0 flex justify-between items-center shadow-md z-10 sticky top-0">
+                    <h2 class="text-sm font-bold text-white flex items-center gap-2">執行步驟詳情</h2>
+                </div>
+                <div id="s-plan-container" class="flex-1 overflow-y-auto p-10 relative bg-slate-950 custom-scrollbar">
                     <div id="s-empty-state" class="absolute inset-0 flex flex-col items-center justify-center text-slate-700 opacity-60 pointer-events-none">
-                        <p class="text-lg font-light tracking-wide">輸入數值後點擊推演</p>
+                        <p class="text-lg font-light tracking-wide">請選擇左側推演結果</p>
                     </div>
                     <div id="s-steps-list" class="max-w-2xl mx-auto space-y-0"></div>
                 </div>
@@ -223,12 +340,12 @@
         };
 
         const OPERATIONS = [
-            { name: "體能特訓", delta: [40, -20, -20], desc: "體+40 / 心-20 / 戰-20" },
-            { name: "心理特訓", delta: [-20, 40, -20], desc: "體-20 / 心+40 / 戰-20" },
-            { name: "戰術特訓", delta: [-20, -20, 40], desc: "體-20 / 心-20 / 戰+40" },
-            { name: "體能與心理", delta: [20, 20, -40], desc: "體+20 / 心+20 / 戰-40" },
-            { name: "體能與戰術", delta: [20, -40, 20], desc: "體+20 / 心-40 / 戰+20" },
-            { name: "心理與戰術", delta: [-40, 20, 20], desc: "體-40 / 心+20 / 戰+20" }
+            { name: "體能特訓", delta: [40, -20, -20], desc: "體+40 / 心-20 / 戰-20", icon: "./img/train_phy.png" },
+            { name: "心智特訓", delta: [-20, 40, -20], desc: "體-20 / 心+40 / 戰-20", icon: "./img/train_men.png" },
+            { name: "戰術特訓", delta: [-20, -20, 40], desc: "體-20 / 心-20 / 戰+40", icon: "./img/train_tac.png" },
+            { name: "體能與心智", delta: [20, 20, -40], desc: "體+20 / 心+20 / 戰-40", icon: "./img/train_phymen.png" },
+            { name: "體能與戰術", delta: [20, -40, 20], desc: "體+20 / 心-40 / 戰+20", icon: "./img/train_phytac.png" },
+            { name: "心智與戰術", delta: [-40, 20, 20], desc: "體-40 / 心+20 / 戰+20", icon: "./img/train_mentac.png" }
         ];
 
         const DEFAULT_ROSTER = [
@@ -250,7 +367,24 @@
                 ['phy', 'men', 'tac'].forEach(stat => {
                     document.getElementById(`${prefix}-${stat}`).addEventListener('input', () => updateTotalDisplay(prefix));
                 });
+                
+                // Add listener to the Cap input
+                const capInput = document.getElementById(`${prefix}-cap`);
+                if(capInput) {
+                    capInput.addEventListener('input', () => updateTotalDisplay(prefix));
+                }
             });
+
+            // Bind listener for shared cap in Solo Sim
+            const sCommonCap = document.getElementById('s-common-cap');
+            if(sCommonCap) {
+                sCommonCap.addEventListener('input', () => {
+                    // Force update for both Start and Target
+                    // We treat s-common-cap as the source of truth for cap value
+                    updateTotalDisplay('s-curr');
+                    updateTotalDisplay('s-target');
+                });
+            }
         };
 
         function switchTab(tabId) {
@@ -279,12 +413,40 @@
                 parseInt(document.getElementById(`${prefix}-tac`).value)||0
             ];
             const sum = vals.reduce((a,b)=>a+b,0);
-            const el = document.getElementById(`${prefix}-total`);
-            el.innerText = `Total: ${sum}`;
-            if (sum !== 280 && sum !== 400) {
-                el.className = "text-[10px] px-2 py-0.5 rounded bg-red-900/20 text-red-400 border border-red-800 font-bold font-mono";
+            
+            // Determine Cap source
+            let cap = 280;
+            let capDisplayId = null;
+
+            if (prefix === 't-curr') {
+                const capInput = document.getElementById('t-curr-cap');
+                cap = parseInt(capInput ? capInput.value : 280) || 280;
+            } else if (prefix === 's-curr' || prefix === 's-target') {
+                const commonCapInput = document.getElementById('s-common-cap');
+                cap = parseInt(commonCapInput ? commonCapInput.value : 280) || 280;
+                // Sync display for target
+                if (prefix === 's-target') {
+                    capDisplayId = 's-target-cap-display';
+                }
+            }
+
+            const el = document.getElementById(`${prefix}-sum`);
+            const wrapper = document.getElementById(`${prefix}-wrapper`);
+            
+            el.innerText = `${sum}`;
+            if (capDisplayId) {
+                document.getElementById(capDisplayId).innerText = `${cap}`;
+            }
+            
+            // Validation: Check if sum equals cap
+            if (sum !== cap) {
+                wrapper.classList.remove('bg-slate-900', 'border-slate-700');
+                wrapper.classList.add('bg-red-900/20', 'border-red-800');
+                el.classList.add('text-red-400');
             } else {
-                el.className = "text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-500 border border-slate-700 font-mono";
+                wrapper.classList.add('bg-slate-900', 'border-slate-700');
+                wrapper.classList.remove('bg-red-900/20', 'border-red-800');
+                el.classList.remove('text-red-400');
             }
         }
 
@@ -295,6 +457,15 @@
                 parseInt(document.getElementById(`${prefix}-men`).value)||0,
                 parseInt(document.getElementById(`${prefix}-tac`).value)||0
             ];
+        }
+
+        function adjustVal(id, delta) {
+            const el = document.getElementById(id);
+            let val = parseInt(el.value) || 0;
+            val += delta;
+            if (val < 0) val = 0;
+            el.value = val;
+            el.dispatchEvent(new Event('input'));
         }
 
         // --- TAB 1 LOGIC (TEAM) ---
@@ -335,17 +506,27 @@
             const currTrain = getValues('t-curr');
             const { roster, must } = getRoster();
             
+            // Cap Validation
+            const cap = parseInt(document.getElementById('t-curr-cap').value) || 280;
+            const currSum = currTrain.reduce((a,b)=>a+b,0);
+            
+            // We allow calculations if they match the cap
+            if (currSum !== cap) {
+                alert(`當前特訓數值總和 (${currSum}) 與設定上限 (${cap}) 不符。\n請調整數值或上限。`);
+                return;
+            }
+
             const container = document.getElementById('t-results');
             const countEl = document.getElementById('t-combo-count');
             container.innerHTML = '<div class="text-center text-slate-500 py-4"><div class="animate-spin h-5 w-5 border-2 border-indigo-500 rounded-full border-t-transparent mx-auto mb-2"></div>計算中...</div>';
 
             setTimeout(() => {
-                const solutions = solveCombinations(roster, must, mission, currTrain);
+                const solutions = solveCombinations(roster, must, mission, currTrain, cap);
                 renderTeamSolutions(solutions);
             }, 50);
         }
 
-        function solveCombinations(roster, must, mission, currTrain) {
+        function solveCombinations(roster, must, mission, currTrain, cap) {
             const results = [];
             const indices = [0,1,2,3,4,5,6,7];
             const getCombos = (arr, k) => {
@@ -358,6 +539,9 @@
                 return [...withFirst, ...withoutFirst];
             };
             const combos = getCombos(indices, 4);
+            
+            // Use the CAP as the budget for calculation
+            const budget = cap;
 
             combos.forEach(teamIdxs => {
                 if (!must.every(m => teamIdxs.includes(m))) return;
@@ -372,8 +556,12 @@
                     Math.max(0, mission[2] - base[2])
                 ];
                 const reqSum = reqTrain.reduce((a,b)=>a+b,0);
-                if (reqSum <= 280) {
-                    const targetTrain = findOptimalTarget(currTrain, reqTrain);
+                
+                // Use dynamic budget
+                if (reqSum <= budget) {
+                    const targetTrain = findOptimalTarget(currTrain, reqTrain, budget);
+                    // A* only works if current sum == target sum == budget
+                    // Our validation ensures currTrain sum == budget. findOptimalTarget ensures targetTrain sum == budget.
                     const pathResult = runAStarWithPhysics(currTrain, targetTrain);
                     if (pathResult.success) {
                         results.push({ teamIdxs, base, targetTrain, steps: pathResult.path.length, path: pathResult.path });
@@ -383,8 +571,8 @@
             return results.sort((a,b) => a.steps - b.steps);
         }
 
-        function findOptimalTarget(current, required) {
-            let surplus = 280 - (required[0] + required[1] + required[2]);
+        function findOptimalTarget(current, required, limit) {
+            let surplus = limit - (required[0] + required[1] + required[2]);
             const target = [...required];
             while (surplus > 0) {
                 let bestIdx = 0;
@@ -424,7 +612,7 @@
                     el.classList.add('selected-card');
                     renderPath(sol.path, sol.targetTrain, 't-plan-container');
                 };
-                const members = sol.teamIdxs.map(idx => `<span class="text-[10px] bg-slate-900 border border-slate-700 px-1 py-0.5 rounded text-slate-400">${roster[idx].cls}</span>`).join('');
+                const members = sol.teamIdxs.map(idx => `<span class="text-[10px] bg-slate-900 border border-slate-700 px-1 py-0.5 rounded text-slate-400">#${idx+1} ${roster[idx].cls}</span>`).join('');
                 const stepColor = sol.steps === 0 ? 'text-emerald-400' : sol.steps <= 5 ? 'text-indigo-400' : 'text-amber-400';
                 
                 el.innerHTML = `
@@ -446,26 +634,55 @@
             const target = getValues('s-target');
             const statusEl = document.getElementById('s-plan-status');
             const emptyEl = document.getElementById('s-empty-state');
-            const listEl = document.getElementById('s-steps-list');
+            const listContainer = document.getElementById('s-results-list');
 
             const startSum = start.reduce((a,b)=>a+b,0);
             const targetSum = target.reduce((a,b)=>a+b,0);
+            
+            // Get Caps
+            const commonCap = parseInt(document.getElementById('s-common-cap').value) || 280;
 
-            if (startSum !== targetSum) {
-                alert('數值總和不匹配，必須相等 (通常為280)');
+            // Solo Path Validation
+            if (startSum !== commonCap) {
+                alert(`起點總和 (${startSum}) 與設定上限 (${commonCap}) 不符。`);
+                return;
+            }
+            if (targetSum !== commonCap) {
+                alert(`目標總和 (${targetSum}) 與設定上限 (${commonCap}) 不符。`);
                 return;
             }
 
-            listEl.innerHTML = '';
-            emptyEl.classList.add('hidden');
-            statusEl.innerText = '計算中...';
+            listContainer.innerHTML = '<div class="text-center text-slate-500 py-4"><div class="animate-spin h-5 w-5 border-2 border-indigo-500 rounded-full border-t-transparent mx-auto mb-2"></div>計算中...</div>';
 
             setTimeout(() => {
                 const result = runAStarWithPhysics(start, target);
                 statusEl.innerHTML = result.success 
-                    ? `<span class="text-emerald-400 font-bold">成功 (${result.path.length}步)</span>` 
-                    : `<span class="text-amber-400">顯示最接近路徑</span>`;
-                renderPath(result.path, target, 's-steps-list');
+                    ? `<span class="text-emerald-400 font-bold">成功</span>` 
+                    : `<span class="text-amber-400">最接近</span>`;
+                
+                // Render single result card in middle pane
+                listContainer.innerHTML = '';
+                const card = document.createElement('div');
+                card.className = "bg-slate-800 p-3 rounded border border-slate-700 cursor-pointer selected-card group transition-all";
+                card.onclick = () => renderPath(result.path, target, 's-plan-container');
+                
+                const stepBadgeColor = result.path.length === 0 ? 'text-emerald-400' : 'text-indigo-400';
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="font-bold text-white text-sm">最佳路徑</div>
+                        <div class="text-[10px] font-bold ${stepBadgeColor} bg-slate-900 px-2 py-0.5 rounded border border-slate-700 badge-step">${result.path.length} 步</div>
+                    </div>
+                    <div class="text-[10px] text-slate-500 font-mono">
+                        Target: ${target.join('/')}
+                    </div>
+                `;
+                listContainer.appendChild(card);
+                
+                // Auto render details
+                renderPath(result.path, target, 's-plan-container');
+                emptyEl.classList.add('hidden');
+
             }, 50);
         }
 
@@ -554,17 +771,14 @@
                 return;
             }
 
-            let prevStats = null; // Start state depends on context, inferred from first step delta? No, need accurate highlight.
-            // Simplified rendering: just render steps. Highlight zero transfer if obvious.
+            let prevStats = null; 
             
             path.forEach((step, i) => {
                 const el = document.createElement('div');
                 el.className = "step-item relative pl-10 pb-6 group";
-                // Detect physics: We don't have prev state easily passed here for generic render without context
-                // But we can check standard delta
                 const isTransfer = !step.op.name.includes('與') && (
-                    (step.op.name.includes('體') && step.op.delta[0] === 40 && step.res[0] % 20 !== 0) || // Crude heuristic
-                    false // Actually hard to detect without prev state history. Let's just render clean.
+                    (step.op.name.includes('體') && step.op.delta[0] === 40 && step.res[0] % 20 !== 0) || 
+                    false 
                 ); 
                 
                 el.innerHTML = `
@@ -574,10 +788,15 @@
                     </div>
                     <div class="bg-slate-800 p-3 rounded-lg border border-slate-700 shadow-sm group-hover:border-indigo-500/50 transition-colors">
                         <div class="flex justify-between items-center mb-2">
-                            <h3 class="font-bold text-white text-sm">${step.op.name}</h3>
+                            <div class="flex items-center gap-3">
+                                <img src="${step.op.icon}" class="h-9 w-auto object-contain rounded shadow-lg shadow-indigo-500/30 border border-slate-700/50" alt="${step.op.name}">
+                                <div>
+                                    <h3 class="font-bold text-white text-sm">${step.op.name}</h3>
+                                    <div class="text-[10px] text-slate-400 mt-0.5">${step.op.desc}</div>
+                                </div>
+                            </div>
                             <span class="text-[10px] text-slate-500 font-mono bg-slate-900 px-1.5 py-0.5 rounded">${step.res.join('/')}</span>
                         </div>
-                        <div class="text-[10px] text-slate-400">${step.op.desc}</div>
                     </div>
                 `;
                 container.appendChild(el);
