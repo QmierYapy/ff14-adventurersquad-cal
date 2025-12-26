@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FF14 分隊特訓戰略指揮官 (UI修復版)</title>
+    <title>FF14 分隊特訓終極套件</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
             background-color: #020617; /* slate-950 */
             color: #e2e8f0;
             font-family: 'Noto Sans TC', sans-serif;
-            overflow: hidden; /* Prevent body scroll, handle inside panels */
+            overflow: hidden;
         }
         
-        /* Custom Scrollbar for sleek look */
+        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
@@ -33,16 +33,25 @@
         }
         .stat-input:focus { outline: none; border-color: #6366f1; background-color: #0f172a; }
         
+        /* Remove native spinners */
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
         .selected-card {
-            border-color: #818cf8 !important; /* indigo-400 */
-            background-color: #1e1b4b !important; /* indigo-950 */
+            border-color: #818cf8 !important;
+            background-color: #1e1b4b !important;
             box-shadow: inset 0 0 0 1px #818cf8;
         }
 
-        /* Step Connector Line */
         .step-connector {
             position: absolute;
-            left: 19px; /* Center with the circle */
+            left: 19px;
             top: 36px;
             bottom: -20px;
             width: 2px;
@@ -52,134 +61,252 @@
         .step-item:last-child .step-connector { display: none; }
         
         .badge-step { font-variant-numeric: tabular-nums; }
+
+        /* Tab Styles */
+        .tab-btn {
+            @apply px-4 py-2 text-sm font-bold text-slate-400 border-b-2 border-transparent transition-all;
+        }
+        .tab-btn.active {
+            @apply text-indigo-400 border-indigo-500 bg-indigo-500/10;
+        }
+
+        .adjust-btn {
+            @apply w-6 h-full flex items-center justify-center bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white rounded transition-colors select-none text-lg leading-none cursor-pointer border border-slate-700;
+        }
+        .adjust-btn:active {
+            @apply bg-slate-600;
+        }
+
+        /* Cap Input Styling */
+        .cap-input {
+            @apply bg-transparent text-[10px] text-slate-400 w-8 text-center focus:outline-none focus:text-indigo-400 font-bold border-b border-dashed border-slate-600 focus:border-indigo-500;
+        }
     </style>
 </head>
 <body class="h-screen flex flex-col">
 
-    <!-- Header -->
-    <header class="bg-slate-900 border-b border-slate-800 h-16 shrink-0 flex justify-between items-center px-4 shadow-lg z-20">
-        <div class="flex items-center gap-3">
-            <div class="bg-indigo-600 p-1.5 rounded-lg shadow-lg shadow-indigo-500/30">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
+    <!-- Header & Tabs -->
+    <header class="bg-slate-900 border-b border-slate-800 shrink-0 z-20 shadow-lg">
+        <div class="flex justify-between items-center px-4 h-14">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-600 p-1.5 rounded-lg shadow-lg shadow-indigo-500/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-sm font-bold text-white tracking-wide">FF14 分隊特訓終極套件</h1>
+                </div>
             </div>
-            <div>
-                <h1 class="text-lg font-bold text-white tracking-wide leading-tight">FF14 分隊特訓戰略指揮官</h1>
-                <p class="text-[10px] text-slate-400">步數優先 A* 演算法</p>
+            
+            <!-- Tab Navigation -->
+            <div class="flex space-x-1 h-full items-end">
+                <button onclick="switchTab('team')" id="tab-btn-team" class="tab-btn active">
+                    綜合戰略 (隊伍+特訓)
+                </button>
+                <button onclick="switchTab('solo')" id="tab-btn-solo" class="tab-btn">
+                    單獨推演 (純數值)
+                </button>
             </div>
         </div>
-        <button onclick="calculateAll()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded text-sm shadow-lg shadow-indigo-900/50 transition-all active:scale-95 flex items-center gap-2 border border-indigo-500">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
-            </svg>
-            計算最短步數
-        </button>
     </header>
 
-    <!-- Main Layout Container -->
-    <div class="flex-1 flex overflow-hidden min-w-[1024px]"> <!-- Enforce min-width to prevent crushing -->
+    <!-- CONTENT AREA -->
+    <div class="flex-1 relative overflow-auto bg-slate-950">
         
-        <!-- PANE 1: Configuration (Fixed Width) -->
-        <aside class="w-72 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 overflow-y-auto z-10">
+        <!-- TAB 1: TEAM STRATEGY -->
+        <div id="view-team" class="absolute inset-0 flex transition-opacity duration-300 min-w-[1024px]">
             
-            <!-- Current Stats -->
-            <div class="p-4 border-b border-slate-800">
-                <div class="flex justify-between items-center mb-2">
-                    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">1. 當前特訓狀態</h2>
-                    <span id="curr-total-display" class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-500 border border-slate-700">Total: 280</span>
+            <!-- 1. Config Pane -->
+            <aside class="w-72 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 overflow-y-auto z-10 custom-scrollbar sticky left-0 h-full shadow-xl pb-6">
+                <div class="p-4 border-b border-slate-800">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">1. 當前特訓狀態</h2>
+                        <!-- 可輸入上限的 UI -->
+                        <div id="t-curr-wrapper" class="flex items-center gap-1 bg-slate-800 rounded px-2 py-0.5 border border-slate-700 transition-colors">
+                            <span id="t-curr-sum" class="text-[10px] text-slate-500 font-mono">280</span>
+                            <span class="text-[10px] text-slate-600">/</span>
+                            <input type="number" id="t-curr-cap" class="cap-input" value="280" step="20" title="點擊修改上限 (200/280/400)">
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2 h-8">
+                            <label class="text-xs text-blue-400 w-8 font-bold text-right shrink-0">體能</label>
+                            <button class="adjust-btn" onclick="adjustVal('t-curr-phy', -20)">-</button>
+                            <input type="number" id="t-curr-phy" class="stat-input h-full" value="80" step="20">
+                            <button class="adjust-btn" onclick="adjustVal('t-curr-phy', 20)">+</button>
+                        </div>
+                        <div class="flex items-center gap-2 h-8">
+                            <label class="text-xs text-green-400 w-8 font-bold text-right shrink-0">心理</label>
+                            <button class="adjust-btn" onclick="adjustVal('t-curr-men', -20)">-</button>
+                            <input type="number" id="t-curr-men" class="stat-input h-full" value="80" step="20">
+                            <button class="adjust-btn" onclick="adjustVal('t-curr-men', 20)">+</button>
+                        </div>
+                        <div class="flex items-center gap-2 h-8">
+                            <label class="text-xs text-amber-400 w-8 font-bold text-right shrink-0">戰術</label>
+                            <button class="adjust-btn" onclick="adjustVal('t-curr-tac', -20)">-</button>
+                            <input type="number" id="t-curr-tac" class="stat-input h-full" value="120" step="20">
+                            <button class="adjust-btn" onclick="adjustVal('t-curr-tac', 20)">+</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="space-y-2">
-                    <div class="flex items-center gap-2">
-                        <label class="text-xs text-blue-400 w-8 font-bold">體能</label>
-                        <input type="number" id="curr-phy" class="stat-input" value="80">
+                <div class="p-4 border-b border-slate-800">
+                    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">2. 任務需求</h2>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2 h-8">
+                            <label class="text-xs text-blue-400 w-8 font-bold text-right shrink-0">體能</label>
+                            <button class="adjust-btn" onclick="adjustVal('t-miss-phy', -5)">-</button>
+                            <input type="number" id="t-miss-phy" class="stat-input h-full" value="315" step="5">
+                            <button class="adjust-btn" onclick="adjustVal('t-miss-phy', 5)">+</button>
+                        </div>
+                        <div class="flex items-center gap-2 h-8">
+                            <label class="text-xs text-green-400 w-8 font-bold text-right shrink-0">心理</label>
+                            <button class="adjust-btn" onclick="adjustVal('t-miss-men', -5)">-</button>
+                            <input type="number" id="t-miss-men" class="stat-input h-full" value="325" step="5">
+                            <button class="adjust-btn" onclick="adjustVal('t-miss-men', 5)">+</button>
+                        </div>
+                        <div class="flex items-center gap-2 h-8">
+                            <label class="text-xs text-amber-400 w-8 font-bold text-right shrink-0">戰術</label>
+                            <button class="adjust-btn" onclick="adjustVal('t-miss-tac', -5)">-</button>
+                            <input type="number" id="t-miss-tac" class="stat-input h-full" value="340" step="5">
+                            <button class="adjust-btn" onclick="adjustVal('t-miss-tac', 5)">+</button>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <label class="text-xs text-green-400 w-8 font-bold">心理</label>
-                        <input type="number" id="curr-men" class="stat-input" value="80">
+                </div>
+                <div class="p-4 flex-1 flex flex-col min-h-0">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">3. 隊員名冊</h2>
+                        <span class="text-[10px] text-slate-600">勾選必帶</span>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <label class="text-xs text-amber-400 w-8 font-bold">戰術</label>
-                        <input type="number" id="curr-tac" class="stat-input" value="120">
-                    </div>
+                    <div id="t-roster-list" class="space-y-2 overflow-y-auto pr-1 pb-4 flex-1 custom-scrollbar"></div>
+                    <button onclick="calculateTeamStrategy()" class="mt-2 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded text-sm shadow-lg active:scale-95 flex items-center justify-center gap-2 border border-indigo-500/50">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" /></svg>
+                        計算最佳方案
+                    </button>
+                </div>
+            </aside>
+
+            <!-- 2. Solutions Pane -->
+            <div class="w-80 bg-slate-900/50 border-r border-slate-800 flex flex-col shrink-0 z-0 custom-scrollbar pb-6">
+                <div class="p-3 border-b border-slate-800 bg-slate-900/80 backdrop-blur shrink-0 flex justify-between items-end sticky top-0 z-10">
+                    <h2 class="text-sm font-bold text-white">方案列表</h2>
+                    <span id="t-combo-count" class="text-[10px] text-slate-500">等待計算</span>
+                </div>
+                <div id="t-results" class="flex-1 overflow-y-auto p-3 space-y-2">
+                    <div class="text-center text-slate-600 py-20 text-xs border-2 border-dashed border-slate-800 rounded-lg">請點擊左側「計算最佳方案」</div>
                 </div>
             </div>
 
-            <!-- Mission Requirements -->
-            <div class="p-4 border-b border-slate-800">
-                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">2. 任務需求</h2>
-                <div class="space-y-2">
-                    <div class="flex items-center gap-2">
-                        <label class="text-xs text-blue-400 w-8 font-bold">體能</label>
-                        <input type="number" id="miss-phy" class="stat-input" value="315">
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <label class="text-xs text-green-400 w-8 font-bold">心理</label>
-                        <input type="number" id="miss-men" class="stat-input" value="325">
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <label class="text-xs text-amber-400 w-8 font-bold">戰術</label>
-                        <input type="number" id="miss-tac" class="stat-input" value="340">
+            <!-- 3. Plan Pane -->
+            <main class="flex-1 bg-slate-950 flex flex-col min-w-0 pb-6">
+                <div class="p-4 border-b border-slate-800 bg-slate-900 shrink-0 flex justify-between items-center sticky top-0 z-10">
+                    <h2 class="text-sm font-bold text-white flex items-center gap-2">執行步驟詳情</h2>
+                </div>
+                <div id="t-plan-container" class="flex-1 overflow-y-auto p-8 relative custom-scrollbar">
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-slate-700 opacity-60 pointer-events-none">
+                        <p>請選擇左側方案</p>
                     </div>
                 </div>
-            </div>
-
-            <!-- Roster -->
-            <div class="p-4 flex-1 flex flex-col min-h-0">
-                <div class="flex justify-between items-center mb-2">
-                    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">3. 隊員名冊</h2>
-                    <span class="text-[10px] text-slate-600">勾選必帶</span>
-                </div>
-                <div id="roster-list" class="space-y-2 overflow-y-auto pr-1 pb-4 flex-1">
-                    <!-- JS Injected Roster -->
-                </div>
-            </div>
-        </aside>
-
-        <!-- PANE 2: Team Solutions (Fixed Width) -->
-        <div class="w-80 bg-slate-900/50 border-r border-slate-800 flex flex-col shrink-0 z-0">
-            <div class="p-3 border-b border-slate-800 bg-slate-900/80 backdrop-blur shrink-0 flex justify-between items-end">
-                <h2 class="text-sm font-bold text-white">最佳方案列表</h2>
-                <span id="combo-count" class="text-[10px] text-slate-500">等待計算</span>
-            </div>
-            
-            <div id="team-results" class="flex-1 overflow-y-auto p-3 space-y-2">
-                <div class="text-center text-slate-600 py-20 text-xs border-2 border-dashed border-slate-800 rounded-lg">
-                    請點擊左上角<br>「計算最短步數」
-                </div>
-            </div>
+            </main>
         </div>
 
-        <!-- PANE 3: Execution Plan (Flexible Width) -->
-        <main class="flex-1 bg-slate-950 flex flex-col min-w-0">
-            <div class="p-4 border-b border-slate-800 bg-slate-900 shrink-0 flex justify-between items-center">
-                <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                    <span class="bg-indigo-500/10 text-indigo-400 p-1 rounded">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
-                        </svg>
-                    </span>
-                    執行步驟詳情
-                </h2>
-                <div id="plan-header-info" class="text-xs text-slate-400">
-                    <!-- Dynamic Info -->
-                </div>
-            </div>
+        <!-- TAB 2: SOLO SIM -->
+        <div id="view-solo" class="absolute inset-0 flex transition-opacity duration-300 opacity-0 pointer-events-none min-w-[800px]">
             
-            <div id="training-plan-container" class="flex-1 overflow-y-auto p-8 relative">
-                <div class="absolute inset-0 flex flex-col items-center justify-center text-slate-700 opacity-60 pointer-events-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <p>請從中間列表選擇一個方案</p>
+            <!-- 1. Config Pane -->
+            <aside class="w-80 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 overflow-y-auto z-10 shadow-xl p-6 space-y-6 sticky left-0 h-full pb-6">
+                <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-xs font-bold text-blue-400 uppercase tracking-wider">起點 (Start)</h2>
+                        <!-- 可輸入上限的 UI -->
+                        <div id="s-curr-wrapper" class="flex items-center gap-1 bg-slate-800 rounded px-2 py-0.5 border border-slate-700 transition-colors">
+                            <span id="s-curr-sum" class="text-[10px] text-slate-500 font-mono">280</span>
+                            <span class="text-[10px] text-slate-600">/</span>
+                            <input type="number" id="s-curr-cap" class="cap-input" value="280" step="20">
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2 h-8">
+                            <label class="text-xs text-slate-400 w-8 text-right shrink-0">體能</label>
+                            <button class="adjust-btn" onclick="adjustVal('s-curr-phy', -20)">-</button>
+                            <input type="number" id="s-curr-phy" class="stat-input h-full" value="80" step="20">
+                            <button class="adjust-btn" onclick="adjustVal('s-curr-phy', 20)">+</button>
+                        </div>
+                        <div class="flex items-center gap-2 h-8">
+                            <label class="text-xs text-slate-400 w-8 text-right shrink-0">心理</label>
+                            <button class="adjust-btn" onclick="adjustVal('s-curr-men', -20)">-</button>
+                            <input type="number" id="s-curr-men" class="stat-input h-full" value="80" step="20">
+                            <button class="adjust-btn" onclick="adjustVal('s-curr-men', 20)">+</button>
+                        </div>
+                        <div class="flex items-center gap-2 h-8">
+                            <label class="text-xs text-slate-400 w-8 text-right shrink-0">戰術</label>
+                            <button class="adjust-btn" onclick="adjustVal('s-curr-tac', -20)">-</button>
+                            <input type="number" id="s-curr-tac" class="stat-input h-full" value="120" step="20">
+                            <button class="adjust-btn" onclick="adjustVal('s-curr-tac', 20)">+</button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </main>
+
+                <div class="flex justify-center -my-2 opacity-30"><svg class="h-5 w-5 text-slate-400 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg></div>
+
+                <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">目標 (Target)</h2>
+                        <!-- 可輸入上限的 UI -->
+                        <div id="s-target-wrapper" class="flex items-center gap-1 bg-slate-800 rounded px-2 py-0.5 border border-slate-700 transition-colors">
+                            <span id="s-target-sum" class="text-[10px] text-slate-500 font-mono">280</span>
+                            <span class="text-[10px] text-slate-600">/</span>
+                            <input type="number" id="s-target-cap" class="cap-input" value="280" step="20">
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2 h-8">
+                            <label class="text-xs text-slate-400 w-8 text-right shrink-0">體能</label>
+                            <button class="adjust-btn" onclick="adjustVal('s-target-phy', -20)">-</button>
+                            <input type="number" id="s-target-phy" class="stat-input h-full" value="80" step="20">
+                            <button class="adjust-btn" onclick="adjustVal('s-target-phy', 20)">+</button>
+                        </div>
+                        <div class="flex items-center gap-2 h-8">
+                            <label class="text-xs text-slate-400 w-8 text-right shrink-0">心理</label>
+                            <button class="adjust-btn" onclick="adjustVal('s-target-men', -20)">-</button>
+                            <input type="number" id="s-target-men" class="stat-input h-full" value="120" step="20">
+                            <button class="adjust-btn" onclick="adjustVal('s-target-men', 20)">+</button>
+                        </div>
+                        <div class="flex items-center gap-2 h-8">
+                            <label class="text-xs text-slate-400 w-8 text-right shrink-0">戰術</label>
+                            <button class="adjust-btn" onclick="adjustVal('s-target-tac', -20)">-</button>
+                            <input type="number" id="s-target-tac" class="stat-input h-full" value="80" step="20">
+                            <button class="adjust-btn" onclick="adjustVal('s-target-tac', 20)">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="calculateSoloPath()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 border border-emerald-500">
+                    <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                    推演轉換路徑
+                </button>
+            </aside>
+
+            <!-- 2. Result Pane -->
+            <main class="flex-1 bg-slate-950 flex flex-col min-w-0 pb-6">
+                <div class="p-4 border-b border-slate-800 bg-slate-900 shrink-0 flex justify-between items-center shadow-md z-10 sticky top-0">
+                    <h2 class="text-sm font-bold text-white flex items-center gap-2">推演結果</h2>
+                    <div id="s-plan-status" class="text-xs text-slate-400">等待輸入...</div>
+                </div>
+                <div id="s-plan-container" class="flex-1 overflow-y-auto p-10 relative bg-slate-950 custom-scrollbar">
+                    <div id="s-empty-state" class="absolute inset-0 flex flex-col items-center justify-center text-slate-700 opacity-60 pointer-events-none">
+                        <p class="text-lg font-light tracking-wide">輸入數值後點擊推演</p>
+                    </div>
+                    <div id="s-steps-list" class="max-w-2xl mx-auto space-y-0"></div>
+                </div>
+            </main>
+        </div>
+
     </div>
 
-    <!-- Logic Script -->
+    <!-- LOGIC -->
     <script>
-        // --- DATA ---
+        // --- CONSTANTS ---
         const HERO_DATAS = {
             '斧術師': [[60,12,24],[61,12,25],[63,12,25],[64,12,26],[65,13,26],[66,13,27],[66,14,28],[68,14,28],[70,14,28],[72,14,28],[73,15,28],[74,15,29],[74,16,30],[75,16,31],[77,16,31],[78,16,32],[79,17,32],[80,17,33],[80,18,34],[82,18,34],[84,18,34],[86,18,34],[87,19,34],[88,19,35],[88,20,36],[89,20,37],[91,20,37],[92,20,38],[93,21,38],[94,21,39],[94,22,40],[96,22,40],[98,22,40],[100,22,40],[101,23,40],[102,23,41],[102,24,42],[103,24,43],[105,24,43],[106,24,44],[107,25,44],[108,25,45],[108,26,46],[110,26,46],[112,26,46],[114,26,46],[115,27,46],[116,27,47],[116,28,48],[117,28,49],[119,28,49],[120,28,50],[121,29,50],[122,29,51],[122,30,52],[124,30,52],[126,30,52],[128,30,52],[129,31,52],[130,31,53]],
             '劍術師': [[48,12,36],[50,12,36],[52,12,36],[54,12,36],[55,13,36],[56,13,37],[56,14,38],[57,14,39],[59,14,39],[60,14,40],[61,15,40],[62,15,41],[62,16,42],[64,16,42],[66,16,42],[68,16,42],[69,17,42],[70,17,43],[70,18,44],[71,18,45],[73,18,45],[74,18,46],[75,19,46],[76,19,47],[76,20,48],[78,20,48],[80,20,48],[82,20,48],[83,21,48],[84,21,49],[84,22,50],[85,22,51],[87,22,51],[88,22,52],[89,23,52],[90,23,53],[90,24,54],[92,24,54],[94,24,54],[96,24,54],[97,25,54],[98,25,55],[98,26,56],[99,26,57],[101,26,57],[102,26,58],[103,27,58],[104,27,59],[104,28,60],[106,28,60],[108,28,60],[110,28,60],[111,29,60],[112,29,61],[112,30,62],[113,30,63],[115,30,63],[116,30,64],[117,31,64],[118,31,65]],
@@ -193,15 +320,14 @@
         };
 
         const OPERATIONS = [
-            { name: "體能特訓", delta: [40, -20, -20], desc: "體+40" },
-            { name: "心理特訓", delta: [-20, 40, -20], desc: "心+40" },
-            { name: "戰術特訓", delta: [-20, -20, 40], desc: "戰+40" },
-            { name: "體能與心理", delta: [20, 20, -40], desc: "體心+20" },
-            { name: "體能與戰術", delta: [20, -40, 20], desc: "體戰+20" },
-            { name: "心理與戰術", delta: [-40, 20, 20], desc: "心戰+20" }
+            { name: "體能特訓", delta: [40, -20, -20], desc: "體+40 / 心-20 / 戰-20" },
+            { name: "心理特訓", delta: [-20, 40, -20], desc: "體-20 / 心+40 / 戰-20" },
+            { name: "戰術特訓", delta: [-20, -20, 40], desc: "體-20 / 心-20 / 戰+40" },
+            { name: "體能與心理", delta: [20, 20, -40], desc: "體+20 / 心+20 / 戰-40" },
+            { name: "體能與戰術", delta: [20, -40, 20], desc: "體+20 / 心-40 / 戰+20" },
+            { name: "心理與戰術", delta: [-40, 20, 20], desc: "體-40 / 心+20 / 戰+20" }
         ];
 
-        // Default Roster
         const DEFAULT_ROSTER = [
             { name: '幻術師', level: 43 }, { name: '弓箭手', level: 50 },
             { name: '斧術師', level: 49 }, { name: '幻術師', level: 48 },
@@ -209,24 +335,97 @@
             { name: '咒術師', level: 44 }, { name: '劍術師', level: 42 },
         ];
 
+        // --- INIT & TABS ---
         window.onload = function() {
             renderRosterInputs();
-            ['curr-phy', 'curr-men', 'curr-tac'].forEach(id => {
-                document.getElementById(id).addEventListener('input', updateCurrTotal);
+            updateTotalDisplay('t-curr');
+            updateTotalDisplay('s-curr');
+            updateTotalDisplay('s-target');
+
+            // Bind listeners for totals
+            ['t-curr', 's-curr', 's-target'].forEach(prefix => {
+                ['phy', 'men', 'tac'].forEach(stat => {
+                    document.getElementById(`${prefix}-${stat}`).addEventListener('input', () => updateTotalDisplay(prefix));
+                });
+                
+                // Add listener to the Cap input
+                const capInput = document.getElementById(`${prefix}-cap`);
+                if(capInput) {
+                    capInput.addEventListener('input', () => updateTotalDisplay(prefix));
+                }
             });
         };
 
-        function updateCurrTotal() {
-            const sum = getValues('curr').reduce((a,b)=>a+b,0);
-            const el = document.getElementById('curr-total-display');
-            el.innerText = `Total: ${sum}`;
-            el.className = `text-[10px] px-2 py-0.5 rounded border border-slate-700 ${sum !== 280 && sum !== 400 ? 'text-red-400 font-bold bg-red-900/20' : 'text-slate-500 bg-slate-800'}`;
+        function switchTab(tabId) {
+            const teamView = document.getElementById('view-team');
+            const soloView = document.getElementById('view-solo');
+            const btnTeam = document.getElementById('tab-btn-team');
+            const btnSolo = document.getElementById('tab-btn-solo');
+
+            if (tabId === 'team') {
+                teamView.classList.remove('opacity-0', 'pointer-events-none');
+                soloView.classList.add('opacity-0', 'pointer-events-none');
+                btnTeam.classList.add('active');
+                btnSolo.classList.remove('active');
+            } else {
+                teamView.classList.add('opacity-0', 'pointer-events-none');
+                soloView.classList.remove('opacity-0', 'pointer-events-none');
+                btnTeam.classList.remove('active');
+                btnSolo.classList.add('active');
+            }
         }
 
-        function renderRosterInputs() {
-            const container = document.getElementById('roster-list');
-            const classes = Object.keys(HERO_DATAS);
+        function updateTotalDisplay(prefix) {
+            const vals = [
+                parseInt(document.getElementById(`${prefix}-phy`).value)||0,
+                parseInt(document.getElementById(`${prefix}-men`).value)||0,
+                parseInt(document.getElementById(`${prefix}-tac`).value)||0
+            ];
+            const sum = vals.reduce((a,b)=>a+b,0);
             
+            // Get user defined cap
+            const capInput = document.getElementById(`${prefix}-cap`);
+            const cap = parseInt(capInput ? capInput.value : 280) || 280;
+
+            const el = document.getElementById(`${prefix}-sum`);
+            const wrapper = document.getElementById(`${prefix}-wrapper`);
+            
+            el.innerText = `${sum}`;
+            
+            // Validation: Check if sum equals cap
+            if (sum !== cap) {
+                wrapper.classList.remove('bg-slate-800', 'border-slate-700');
+                wrapper.classList.add('bg-red-900/20', 'border-red-800');
+                el.classList.add('text-red-400');
+            } else {
+                wrapper.classList.add('bg-slate-800', 'border-slate-700');
+                wrapper.classList.remove('bg-red-900/20', 'border-red-800');
+                el.classList.remove('text-red-400');
+            }
+        }
+
+        // --- SHARED UTILS ---
+        function getValues(prefix) {
+            return [
+                parseInt(document.getElementById(`${prefix}-phy`).value)||0,
+                parseInt(document.getElementById(`${prefix}-men`).value)||0,
+                parseInt(document.getElementById(`${prefix}-tac`).value)||0
+            ];
+        }
+
+        function adjustVal(id, delta) {
+            const el = document.getElementById(id);
+            let val = parseInt(el.value) || 0;
+            val += delta;
+            if (val < 0) val = 0;
+            el.value = val;
+            el.dispatchEvent(new Event('input'));
+        }
+
+        // --- TAB 1 LOGIC (TEAM) ---
+        function renderRosterInputs() {
+            const container = document.getElementById('t-roster-list');
+            const classes = Object.keys(HERO_DATAS);
             DEFAULT_ROSTER.forEach((member, i) => {
                 const div = document.createElement('div');
                 div.className = "flex items-center gap-1 bg-slate-800/50 p-1.5 rounded border border-slate-700";
@@ -236,24 +435,14 @@
                         ${classes.map(c => `<option value="${c}" ${c === member.name ? 'selected' : ''}>${c}</option>`).join('')}
                     </select>
                     <input type="number" class="r-level bg-slate-900 text-white text-[10px] rounded border border-slate-600 w-8 text-center" value="${member.level}" min="1" max="60">
-                    <div class="flex-1 text-right">
-                        <input type="checkbox" class="r-check accent-indigo-500 w-3 h-3" ${i===2 ? 'checked':''}>
-                    </div>
+                    <div class="flex-1 text-right"><input type="checkbox" class="r-check accent-indigo-500 w-3 h-3" ${i===2 ? 'checked':''}></div>
                 `;
                 container.appendChild(div);
             });
         }
 
-        function getValues(prefix) {
-            return [
-                parseInt(document.getElementById(`${prefix}-phy`).value)||0,
-                parseInt(document.getElementById(`${prefix}-men`).value)||0,
-                parseInt(document.getElementById(`${prefix}-tac`).value)||0
-            ];
-        }
-
         function getRoster() {
-            const items = document.querySelectorAll('#roster-list > div');
+            const items = document.querySelectorAll('#t-roster-list > div');
             const roster = [];
             const must = [];
             items.forEach((item, idx) => {
@@ -266,32 +455,34 @@
             return { roster, must };
         }
 
-        function calculateAll() {
-            const mission = getValues('miss');
-            const currTrain = getValues('curr');
+        function calculateTeamStrategy() {
+            const mission = getValues('t-miss');
+            const currTrain = getValues('t-curr');
             const { roster, must } = getRoster();
             
+            // Cap Validation
+            const cap = parseInt(document.getElementById('t-curr-cap').value) || 280;
             const currSum = currTrain.reduce((a,b)=>a+b,0);
-            if (currSum !== 280 && currSum !== 400) {
-                alert("當前特訓數值總和必須為 280 (或 400)。");
+            
+            // We allow calculations if they match the cap
+            if (currSum !== cap) {
+                alert(`當前特訓數值總和 (${currSum}) 與設定上限 (${cap}) 不符。\n請調整數值或上限。`);
                 return;
             }
 
-            const container = document.getElementById('team-results');
-            const countEl = document.getElementById('combo-count');
-            
+            const container = document.getElementById('t-results');
+            const countEl = document.getElementById('t-combo-count');
             container.innerHTML = '<div class="text-center text-slate-500 py-4"><div class="animate-spin h-5 w-5 border-2 border-indigo-500 rounded-full border-t-transparent mx-auto mb-2"></div>計算中...</div>';
 
             setTimeout(() => {
-                const solutions = solveCombinations(roster, must, mission, currTrain);
-                renderSolutions(solutions);
+                const solutions = solveCombinations(roster, must, mission, currTrain, cap);
+                renderTeamSolutions(solutions);
             }, 50);
         }
 
-        function solveCombinations(roster, must, mission, currTrain) {
+        function solveCombinations(roster, must, mission, currTrain, cap) {
             const results = [];
             const indices = [0,1,2,3,4,5,6,7];
-            
             const getCombos = (arr, k) => {
                 if(k===0) return [[]];
                 if(arr.length===0) return [];
@@ -301,48 +492,42 @@
                 const withoutFirst = getCombos(rest, k);
                 return [...withFirst, ...withoutFirst];
             };
-
             const combos = getCombos(indices, 4);
+            
+            // Use the CAP as the budget for calculation
+            const budget = cap;
 
             combos.forEach(teamIdxs => {
                 if (!must.every(m => teamIdxs.includes(m))) return;
-
                 const base = [0,0,0];
                 teamIdxs.forEach(idx => {
-                    const stats = roster[idx].stats;
-                    base[0]+=stats[0]; base[1]+=stats[1]; base[2]+=stats[2];
+                    const s = roster[idx].stats;
+                    base[0]+=s[0]; base[1]+=s[1]; base[2]+=s[2];
                 });
-
                 const reqTrain = [
                     Math.max(0, mission[0] - base[0]),
                     Math.max(0, mission[1] - base[1]),
                     Math.max(0, mission[2] - base[2])
                 ];
                 const reqSum = reqTrain.reduce((a,b)=>a+b,0);
-
-                if (reqSum <= 280) {
-                    const targetTrain = findOptimalTarget(currTrain, reqTrain);
+                
+                // Use dynamic budget
+                if (reqSum <= budget) {
+                    const targetTrain = findOptimalTarget(currTrain, reqTrain, budget);
+                    // A* only works if current sum == target sum == budget
+                    // Our validation ensures currTrain sum == budget. findOptimalTarget ensures targetTrain sum == budget.
                     const pathResult = runAStarWithPhysics(currTrain, targetTrain);
-                    
                     if (pathResult.success) {
-                        results.push({
-                            teamIdxs,
-                            base,
-                            targetTrain,
-                            steps: pathResult.path.length,
-                            path: pathResult.path
-                        });
+                        results.push({ teamIdxs, base, targetTrain, steps: pathResult.path.length, path: pathResult.path });
                     }
                 }
             });
-
             return results.sort((a,b) => a.steps - b.steps);
         }
 
-        function findOptimalTarget(current, required) {
-            let surplus = 280 - (required[0] + required[1] + required[2]);
+        function findOptimalTarget(current, required, limit) {
+            let surplus = limit - (required[0] + required[1] + required[2]);
             const target = [...required];
-            
             while (surplus > 0) {
                 let bestIdx = 0;
                 let minPenalty = Infinity;
@@ -350,10 +535,7 @@
                     const currDist = Math.abs(current[i] - target[i]);
                     const newDist = Math.abs(current[i] - (target[i] + 1));
                     const penalty = newDist - currDist;
-                    if (penalty < minPenalty) {
-                        minPenalty = penalty;
-                        bestIdx = i;
-                    }
+                    if (penalty < minPenalty) { minPenalty = penalty; bestIdx = i; }
                 }
                 target[bestIdx]++;
                 surplus--;
@@ -361,10 +543,10 @@
             return target;
         }
 
-        function renderSolutions(solutions) {
-            const container = document.getElementById('team-results');
-            const countEl = document.getElementById('combo-count');
-            const planContainer = document.getElementById('training-plan-container');
+        function renderTeamSolutions(solutions) {
+            const container = document.getElementById('t-results');
+            const countEl = document.getElementById('t-combo-count');
+            const planContainer = document.getElementById('t-plan-container');
             
             container.innerHTML = '';
             countEl.innerText = `${solutions.length} 組`;
@@ -376,49 +558,77 @@
             }
 
             const roster = getRoster().roster;
-
             solutions.slice(0, 50).forEach((sol, i) => {
                 const el = document.createElement('div');
                 el.className = "bg-slate-800 p-2.5 rounded border border-slate-700 cursor-pointer hover:bg-slate-750 hover:border-indigo-500/50 transition-all group";
                 el.onclick = () => {
-                    document.querySelectorAll('#team-results > div').forEach(d => d.classList.remove('selected-card'));
+                    document.querySelectorAll('#t-results > div').forEach(d => d.classList.remove('selected-card'));
                     el.classList.add('selected-card');
-                    renderPath(sol.path, sol.targetTrain);
+                    renderPath(sol.path, sol.targetTrain, 't-plan-container');
                 };
-                
-                const members = sol.teamIdxs.map(idx => {
-                    const m = roster[idx];
-                    return `<span class="text-[10px] bg-slate-900 border border-slate-700 px-1 py-0.5 rounded text-slate-400">${m.cls}</span>`;
-                }).join('');
-
+                const members = sol.teamIdxs.map(idx => `<span class="text-[10px] bg-slate-900 border border-slate-700 px-1 py-0.5 rounded text-slate-400">${roster[idx].cls}</span>`).join('');
                 const stepColor = sol.steps === 0 ? 'text-emerald-400' : sol.steps <= 5 ? 'text-indigo-400' : 'text-amber-400';
-                const stepBadge = sol.steps === 0 ? '無需' : `${sol.steps} 步`;
-
+                
                 el.innerHTML = `
                     <div class="flex justify-between items-center mb-1.5">
                         <div class="font-bold text-white text-xs">方案 #${i+1}</div>
-                        <div class="text-[10px] font-bold ${stepColor} bg-slate-900 px-1.5 py-0.5 rounded border border-slate-700 badge-step">
-                            ${stepBadge}
-                        </div>
+                        <div class="text-[10px] font-bold ${stepColor} bg-slate-900 px-1.5 py-0.5 rounded border border-slate-700 badge-step">${sol.steps} 步</div>
                     </div>
                     <div class="flex flex-wrap gap-1 mb-2">${members}</div>
-                    <div class="text-[10px] text-slate-500 font-mono">
-                         Target: ${sol.targetTrain.join('/')}
-                    </div>
+                    <div class="text-[10px] text-slate-500 font-mono">Target: ${sol.targetTrain.join('/')}</div>
                 `;
                 container.appendChild(el);
             });
-            
-            if (solutions.length > 0) {
-                container.firstChild.click();
-            }
+            if (solutions.length > 0) container.firstChild.click();
         }
 
-        // --- A* ---
+        // --- TAB 2 LOGIC (SOLO) ---
+        function calculateSoloPath() {
+            const start = getValues('s-curr');
+            const target = getValues('s-target');
+            const statusEl = document.getElementById('s-plan-status');
+            const emptyEl = document.getElementById('s-empty-state');
+            const listEl = document.getElementById('s-steps-list');
+
+            const startSum = start.reduce((a,b)=>a+b,0);
+            const targetSum = target.reduce((a,b)=>a+b,0);
+            
+            // Get Caps
+            const startCap = parseInt(document.getElementById('s-curr-cap').value) || 280;
+            const targetCap = parseInt(document.getElementById('s-target-cap').value) || 280;
+
+            // Solo Path Validation
+            if (startSum !== startCap) {
+                alert(`起點總和 (${startSum}) 與設定上限 (${startCap}) 不符。`);
+                return;
+            }
+            if (targetSum !== targetCap) {
+                alert(`目標總和 (${targetSum}) 與設定上限 (${targetCap}) 不符。`);
+                return;
+            }
+            if (startSum !== targetSum) {
+                alert(`起點總和 (${startSum}) 與目標總和 (${targetSum}) 不一致。\n特訓無法改變總屬性點數。`);
+                return;
+            }
+
+            listEl.innerHTML = '';
+            emptyEl.classList.add('hidden');
+            statusEl.innerText = '計算中...';
+
+            setTimeout(() => {
+                const result = runAStarWithPhysics(start, target);
+                statusEl.innerHTML = result.success 
+                    ? `<span class="text-emerald-400 font-bold">成功 (${result.path.length}步)</span>` 
+                    : `<span class="text-amber-400">顯示最接近路徑</span>`;
+                renderPath(result.path, target, 's-steps-list');
+            }, 50);
+        }
+
+        // --- A* & PHYSICS (SHARED) ---
         function runAStarWithPhysics(start, target) {
             const queue = [{ state: start, g: 0, h: heuristic(start, target), path: [] }];
             const visited = new Set();
-            const MAX_ITER = 30000;
+            const MAX_ITER = 50000;
             let iter = 0;
             let bestNode = queue[0];
 
@@ -428,7 +638,6 @@
                 const node = queue.shift();
 
                 if (node.h === 0) return { path: node.path, success: true };
-                
                 if (node.h < bestNode.h) bestNode = node;
                 if (iter > MAX_ITER) return { path: bestNode.path, success: false };
 
@@ -439,15 +648,9 @@
                 for (let op of OPERATIONS) {
                     const nextState = applyPhysics(node.state, op);
                     if (!nextState) continue;
-                    if (node.g > 15) continue;
-
+                    if (node.g > 20) continue; 
                     const h = heuristic(nextState, target);
-                    queue.push({
-                        state: nextState,
-                        g: node.g + 1,
-                        h: h,
-                        path: [...node.path, { op, res: nextState }]
-                    });
+                    queue.push({ state: nextState, g: node.g + 1, h: h, path: [...node.path, { op, res: nextState }] });
                 }
             }
             return { path: bestNode.path, success: false };
@@ -468,10 +671,8 @@
             if (op.name.includes('與')) {
                 let loseIdx = op.delta.findIndex(x => x === -40);
                 let gainIndices = [0,1,2].filter(i => i !== loseIdx);
-                
                 let actualLoss = 40;
                 if (next[loseIdx] < 40) actualLoss = next[loseIdx];
-                
                 next[loseIdx] -= actualLoss;
                 let totalGain = actualLoss;
                 let half = Math.floor(totalGain / 2);
@@ -480,21 +681,17 @@
             } else {
                 let d1 = drainIndices[0];
                 let d2 = drainIndices[1];
-                let loss1 = 20;
-                let loss2 = 20;
-                
+                let loss1 = 20, loss2 = 20;
                 if (next[d1] < 20) {
                     let actual = next[d1];
                     loss1 = actual;
-                    loss2 += (20 - actual); 
+                    loss2 += (20 - actual);
                 }
-                
                 if (next[d2] < loss2) {
                     let actual = next[d2];
                     loss2 = actual;
                     requiredGain = loss1 + loss2;
                 }
-                
                 next[d1] -= loss1;
                 next[d2] -= loss2;
                 next[gainIdx] += requiredGain;
@@ -502,57 +699,48 @@
             return next;
         }
 
-        function renderPath(path, target) {
-            const container = document.getElementById('training-plan-container');
+        // --- RENDER PATH (SHARED) ---
+        function renderPath(path, target, containerId) {
+            const container = document.getElementById(containerId);
             container.innerHTML = '';
 
-            const header = document.createElement('div');
-            header.innerHTML = `
-                <div class="bg-indigo-900/10 p-4 rounded-lg border border-indigo-500/20 mb-8 text-center shrink-0">
-                    <div class="text-[10px] text-indigo-300 mb-1 uppercase tracking-wider">目標特訓值</div>
-                    <div class="text-2xl font-bold font-mono text-white tracking-widest">
-                        ${target[0]} <span class="text-slate-600 text-sm">/</span> ${target[1]} <span class="text-slate-600 text-sm">/</span> ${target[2]}
-                    </div>
-                </div>
-            `;
-            container.appendChild(header);
-
             if (path.length === 0) {
-                container.innerHTML += '<div class="p-4 bg-emerald-900/10 text-emerald-400 border border-emerald-800 rounded text-center text-sm">當前數值已完美符合</div>';
+                container.innerHTML = '<div class="p-4 bg-slate-800 border border-slate-700 rounded text-center text-slate-400">無需特訓</div>';
                 return;
             }
 
+            let prevStats = null; 
+            
             path.forEach((step, i) => {
                 const el = document.createElement('div');
                 el.className = "step-item relative pl-10 pb-6 group";
+                const isTransfer = !step.op.name.includes('與') && (
+                    (step.op.name.includes('體') && step.op.delta[0] === 40 && step.res[0] % 20 !== 0) || 
+                    false 
+                ); 
                 
                 el.innerHTML = `
                     <div class="step-connector"></div>
-                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-slate-800 border-2 border-indigo-500 text-white font-bold flex items-center justify-center text-sm z-10 shadow-lg group-hover:bg-indigo-600 group-hover:scale-110 transition-all">
-                        ${i+1}
+                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-slate-800 border-2 border-emerald-500 text-white font-bold flex items-center justify-center text-lg z-10 shadow-lg shadow-emerald-900/20">
+                        ${i + 1}
                     </div>
                     <div class="bg-slate-800 p-3 rounded-lg border border-slate-700 shadow-sm group-hover:border-indigo-500/50 transition-colors">
                         <div class="flex justify-between items-center mb-2">
                             <h3 class="font-bold text-white text-sm">${step.op.name}</h3>
-                            <span class="text-[10px] text-slate-500 font-mono bg-slate-900 px-1.5 py-0.5 rounded">
-                                ${step.res[0]}/${step.res[1]}/${step.res[2]}
-                            </span>
+                            <span class="text-[10px] text-slate-500 font-mono bg-slate-900 px-1.5 py-0.5 rounded">${step.res.join('/')}</span>
                         </div>
-                        <div class="text-[10px] text-slate-400">
-                             ${step.op.desc}
-                        </div>
+                        <div class="text-[10px] text-slate-400">${step.op.desc}</div>
                     </div>
                 `;
                 container.appendChild(el);
             });
-            
-            const finish = document.createElement('div');
-            finish.className = "relative pl-10";
-            finish.innerHTML = `
-                <div class="absolute left-3 top-0 w-4 h-4 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50"></div>
-                <div class="text-sm text-emerald-400 font-bold pt-0.5">達成目標</div>
-            `;
-            container.appendChild(finish);
+
+            container.insertAdjacentHTML('beforeend', `
+                <div class="step-item relative pl-10 pt-2">
+                    <div class="absolute left-3 top-0 w-4 h-4 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50"></div>
+                    <div class="text-sm text-emerald-400 font-bold pt-0.5">達成目標 ${target.join('/')}</div>
+                </div>
+            `);
         }
     </script>
 </body>
