@@ -77,12 +77,12 @@
             @apply bg-slate-600;
         }
 
-        /* Cap Input Styling - Fixed Background */
+        /* Cap Input Styling - Explicit Dark Box Style */
         .cap-input {
-            @apply bg-transparent text-indigo-300 w-10 text-center text-[10px] font-bold focus:outline-none font-mono p-0 m-0 border-b border-dashed border-slate-600 focus:border-indigo-500 focus:text-indigo-400 cursor-text transition-colors;
+            @apply bg-slate-800 text-indigo-300 w-10 text-center text-[10px] font-bold focus:outline-none font-mono py-0.5 border border-slate-600 rounded focus:border-indigo-500 focus:text-indigo-400 cursor-text transition-colors;
         }
         .cap-wrapper {
-            @apply flex items-center gap-1 bg-slate-900 rounded px-2 py-1 border border-slate-700 transition-colors hover:border-slate-600;
+            @apply flex items-center gap-1.5;
         }
     </style>
 </head>
@@ -104,11 +104,11 @@
             
             <!-- Tab Navigation -->
             <div class="flex space-x-1 h-full items-end">
-                <button onclick="switchTab('team')" id="tab-btn-team" class="tab-btn active">
-                    綜合戰略 (隊伍+特訓)
+                <button onclick="switchTab('team')" id="tab-btn-team" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded text-sm shadow-lg active:scale-95 flex items-center justify-center gap-2 border border-indigo-500/50">
+                    綜合戰略
                 </button>
-                <button onclick="switchTab('solo')" id="tab-btn-solo" class="tab-btn">
-                    單獨推演 (純數值)
+                <button onclick="switchTab('solo')" id="tab-btn-solo" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded text-sm shadow-lg active:scale-95 flex items-center justify-center gap-2 border border-emerald-500/50">
+                    單獨推演
                 </button>
             </div>
         </div>
@@ -129,11 +129,11 @@
                 <div class="p-4 border-b border-slate-800 shrink-0">
                     <div class="flex justify-between items-center mb-2">
                         <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">1. 當前特訓狀態</h2>
-                        <!-- Upper Limit Input -->
+                        <!-- Upper Limit Input (Updated) -->
                         <div id="t-curr-wrapper" class="cap-wrapper">
                             <span id="t-curr-sum" class="text-[10px] text-slate-500 font-mono">280</span>
                             <span class="text-[10px] text-slate-600 font-bold">/</span>
-                            <input type="number" id="t-curr-cap" class="cap-input" value="280" step="20" title="點擊修改上限">
+                            <input type="number" id="t-curr-cap" class="r-level bg-slate-900 text-white text-[10px] rounded border border-slate-600 w-8 text-center" value="280" step="20" title="點擊修改上限">
                         </div>
                     </div>
                     <div class="space-y-3">
@@ -193,7 +193,6 @@
                     <div id="t-roster-list" class="space-y-2"></div>
                     
                     <button onclick="calculateTeamStrategy()" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded text-sm shadow-lg active:scale-95 flex items-center justify-center gap-2 border border-indigo-500/50">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" /></svg>
                         計算最佳方案
                     </button>
                 </div>
@@ -226,18 +225,17 @@
         <!-- TAB 2: SOLO SIM -->
         <div id="view-solo" class="absolute inset-0 flex transition-opacity duration-300 opacity-0 pointer-events-none min-w-[1024px]">
             
-            <!-- 1. Config Pane (Removed Sticky) -->
+            <!-- 1. Config Pane -->
             <aside class="w-72 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 overflow-y-auto z-10 shadow-xl p-4 space-y-6 pb-6">
                 
-                <!-- Start Stats with Integrated Cap Setting -->
-                <div class="p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-                    <div class="flex justify-between items-center mb-3">
+                <!-- Start Stats -->
+                <div class="p-4 border-b border-slate-800 shrink-0">
+                    <div class="flex justify-between items-center mb-2">
                         <h2 class="text-xs font-bold text-blue-400 uppercase tracking-wider">起點 (Start)</h2>
                         <div id="s-curr-wrapper" class="cap-wrapper">
                             <span id="s-curr-sum" class="text-[10px] text-slate-500 font-mono">280</span>
                             <span class="text-[10px] text-slate-600 font-bold">/</span>
-                            <!-- Cap Input integrated here -->
-                            <input type="number" id="s-common-cap" class="cap-input" value="280" step="20" title="修改總點數上限 (連動目標)">
+                            <input type="number" id="s-common-cap" class="r-level bg-slate-900 text-white text-[10px] rounded border border-slate-600 w-8 text-center" value="280" step="20" title="修改總點數上限 (連動目標)">
                         </div>
                     </div>
                     <div class="space-y-3">
@@ -262,16 +260,14 @@
                     </div>
                 </div>
 
-                <div class="flex justify-center -my-2 opacity-30"><svg class="h-5 w-5 text-slate-400 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg></div>
-
                 <!-- Target Stats -->
-                <div class="p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-                    <div class="flex justify-between items-center mb-3">
+                <div class="p-4 border-b border-slate-800 shrink-0">
+                    <div class="flex justify-between items-center mb-2">
                         <h2 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">目標 (Target)</h2>
                         <div id="s-target-wrapper" class="cap-wrapper">
                             <span id="s-target-sum" class="text-[10px] text-slate-500 font-mono">280</span>
                             <span class="text-[10px] text-slate-600 font-bold">/</span>
-                            <span id="s-target-cap-display" class="text-[10px] text-indigo-300 font-bold font-mono px-1 w-8 text-center">280</span>
+                            <span id="s-target-cap-display" class="bg-slate-800 text-indigo-300 text-[10px] rounded border border-slate-600 w-10 text-center font-bold font-mono py-0.5">280</span>
                         </div>
                     </div>
                     <div class="space-y-3">
@@ -296,19 +292,19 @@
                     </div>
                 </div>
 
-                <button onclick="calculateSoloPath()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 border border-emerald-500">
-                    <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-                    推演轉換路徑
-                </button>
+                <div class="p-4 shrink-0">
+                    <button onclick="calculateSoloPath()" class="mt-6 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded text-sm shadow-lg active:scale-95 flex items-center justify-center gap-2 border border-indigo-500/50">
+                        推演轉換路徑
+                    </button>
+                </div>
             </aside>
 
-            <!-- 2. Result List (Middle Bar - Added for Consistency) -->
+            <!-- 2. Result List (Middle Bar) -->
             <div class="w-80 bg-slate-900/50 border-r border-slate-800 flex flex-col shrink-0 z-0 custom-scrollbar pb-6">
                 <div class="p-3 border-b border-slate-800 bg-slate-900/80 backdrop-blur shrink-0 flex justify-between items-end sticky top-0 z-10">
                     <h2 class="text-sm font-bold text-white">推演結果</h2>
                     <div id="s-plan-status" class="text-xs text-slate-400">等待輸入...</div>
                 </div>
-                <!-- Result List Container -->
                 <div id="s-results-list" class="flex-1 overflow-y-auto p-3 space-y-2">
                      <div class="text-center text-slate-600 py-20 text-xs border-2 border-dashed border-slate-800 rounded-lg">請點擊左側「推演轉換路徑」</div>
                 </div>
@@ -618,7 +614,7 @@
                     el.classList.add('selected-card');
                     renderPath(sol.path, sol.targetTrain, 't-plan-container');
                 };
-                const members = sol.teamIdxs.map(idx => `<span class="text-[10px] bg-slate-900 border border-slate-700 px-1 py-0.5 rounded text-slate-400">${roster[idx].cls}</span>`).join('');
+                const members = sol.teamIdxs.map(idx => `<span class="text-[10px] bg-slate-900 border border-slate-700 px-1 py-0.5 rounded text-slate-400">#${idx+1} ${roster[idx].cls}</span>`).join('');
                 const stepColor = sol.steps === 0 ? 'text-emerald-400' : sol.steps <= 5 ? 'text-indigo-400' : 'text-amber-400';
                 
                 el.innerHTML = `
