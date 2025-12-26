@@ -83,6 +83,13 @@
         }
         .cap-wrapper {
             @apply flex items-center gap-1.5;
+        }     
+        /* Icon Styling */
+        .stat-icon {
+            @apply w-6 h-6 object-contain shrink-0;
+        }
+        .op-icon {
+            @apply w-8 h-8 object-contain shrink-0 rounded bg-slate-900/50 p-0.5 border border-slate-700;
         }
     </style>
 </head>
@@ -138,19 +145,19 @@
                     </div>
                     <div class="space-y-3">
                         <div class="flex items-center gap-2 h-8">
-                            <label class="text-xs text-blue-400 w-8 font-bold text-right shrink-0">體能</label>
+                            <img src="./img/train_phy.png" class="stat-icon" alt="體能">
                             <button class="adjust-btn" onclick="adjustVal('t-curr-phy', -20)">-</button>
                             <input type="number" id="t-curr-phy" class="stat-input h-full" value="80" step="20">
                             <button class="adjust-btn" onclick="adjustVal('t-curr-phy', 20)">+</button>
                         </div>
                         <div class="flex items-center gap-2 h-8">
-                            <label class="text-xs text-green-400 w-8 font-bold text-right shrink-0">心理</label>
+                            <img src="./img/train_men.png" class="stat-icon" alt="心智">
                             <button class="adjust-btn" onclick="adjustVal('t-curr-men', -20)">-</button>
                             <input type="number" id="t-curr-men" class="stat-input h-full" value="80" step="20">
                             <button class="adjust-btn" onclick="adjustVal('t-curr-men', 20)">+</button>
                         </div>
                         <div class="flex items-center gap-2 h-8">
-                            <label class="text-xs text-amber-400 w-8 font-bold text-right shrink-0">戰術</label>
+                            <img src="./img/train_tac.png" class="stat-icon" alt="戰術">
                             <button class="adjust-btn" onclick="adjustVal('t-curr-tac', -20)">-</button>
                             <input type="number" id="t-curr-tac" class="stat-input h-full" value="120" step="20">
                             <button class="adjust-btn" onclick="adjustVal('t-curr-tac', 20)">+</button>
@@ -163,19 +170,19 @@
                     <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">2. 任務需求</h2>
                     <div class="space-y-3">
                         <div class="flex items-center gap-2 h-8">
-                            <label class="text-xs text-blue-400 w-8 font-bold text-right shrink-0">體能</label>
+                            <img src="./img/train_phy.png" class="stat-icon" alt="體能">
                             <button class="adjust-btn" onclick="adjustVal('t-miss-phy', -5)">-</button>
                             <input type="number" id="t-miss-phy" class="stat-input h-full" value="315" step="5">
                             <button class="adjust-btn" onclick="adjustVal('t-miss-phy', 5)">+</button>
                         </div>
                         <div class="flex items-center gap-2 h-8">
-                            <label class="text-xs text-green-400 w-8 font-bold text-right shrink-0">心理</label>
+                            <img src="./img/train_men.png" class="stat-icon" alt="心智">
                             <button class="adjust-btn" onclick="adjustVal('t-miss-men', -5)">-</button>
                             <input type="number" id="t-miss-men" class="stat-input h-full" value="325" step="5">
                             <button class="adjust-btn" onclick="adjustVal('t-miss-men', 5)">+</button>
                         </div>
                         <div class="flex items-center gap-2 h-8">
-                            <label class="text-xs text-amber-400 w-8 font-bold text-right shrink-0">戰術</label>
+                            <img src="./img/train_tac.png" class="stat-icon" alt="戰術">
                             <button class="adjust-btn" onclick="adjustVal('t-miss-tac', -5)">-</button>
                             <input type="number" id="t-miss-tac" class="stat-input h-full" value="340" step="5">
                             <button class="adjust-btn" onclick="adjustVal('t-miss-tac', 5)">+</button>
@@ -240,19 +247,19 @@
                     </div>
                     <div class="space-y-3">
                         <div class="flex items-center gap-2 h-8">
-                            <label class="text-xs text-slate-400 w-8 text-right shrink-0">體能</label>
+                            <img src="./img/train_phy.png" class="stat-icon" alt="體能">
                             <button class="adjust-btn" onclick="adjustVal('s-curr-phy', -20)">-</button>
                             <input type="number" id="s-curr-phy" class="stat-input h-full" value="80" step="20">
                             <button class="adjust-btn" onclick="adjustVal('s-curr-phy', 20)">+</button>
                         </div>
                         <div class="flex items-center gap-2 h-8">
-                            <label class="text-xs text-slate-400 w-8 text-right shrink-0">心理</label>
+                            <img src="./img/train_men.png" class="stat-icon" alt="心智">
                             <button class="adjust-btn" onclick="adjustVal('s-curr-men', -20)">-</button>
                             <input type="number" id="s-curr-men" class="stat-input h-full" value="80" step="20">
                             <button class="adjust-btn" onclick="adjustVal('s-curr-men', 20)">+</button>
                         </div>
                         <div class="flex items-center gap-2 h-8">
-                            <label class="text-xs text-slate-400 w-8 text-right shrink-0">戰術</label>
+                            <img src="./img/train_tac.png" class="stat-icon" alt="戰術">
                             <button class="adjust-btn" onclick="adjustVal('s-curr-tac', -20)">-</button>
                             <input type="number" id="s-curr-tac" class="stat-input h-full" value="120" step="20">
                             <button class="adjust-btn" onclick="adjustVal('s-curr-tac', 20)">+</button>
@@ -272,19 +279,19 @@
                     </div>
                     <div class="space-y-3">
                         <div class="flex items-center gap-2 h-8">
-                            <label class="text-xs text-slate-400 w-8 text-right shrink-0">體能</label>
+                            <img src="./img/train_phy.png" class="stat-icon" alt="體能">
                             <button class="adjust-btn" onclick="adjustVal('s-target-phy', -20)">-</button>
                             <input type="number" id="s-target-phy" class="stat-input h-full" value="80" step="20">
                             <button class="adjust-btn" onclick="adjustVal('s-target-phy', 20)">+</button>
                         </div>
                         <div class="flex items-center gap-2 h-8">
-                            <label class="text-xs text-slate-400 w-8 text-right shrink-0">心理</label>
+                            <img src="./img/train_men.png" class="stat-icon" alt="心智">
                             <button class="adjust-btn" onclick="adjustVal('s-target-men', -20)">-</button>
                             <input type="number" id="s-target-men" class="stat-input h-full" value="120" step="20">
                             <button class="adjust-btn" onclick="adjustVal('s-target-men', 20)">+</button>
                         </div>
                         <div class="flex items-center gap-2 h-8">
-                            <label class="text-xs text-slate-400 w-8 text-right shrink-0">戰術</label>
+                            <img src="./img/train_tac.png" class="stat-icon" alt="戰術">
                             <button class="adjust-btn" onclick="adjustVal('s-target-tac', -20)">-</button>
                             <input type="number" id="s-target-tac" class="stat-input h-full" value="80" step="20">
                             <button class="adjust-btn" onclick="adjustVal('s-target-tac', 20)">+</button>
@@ -342,12 +349,12 @@
         };
 
         const OPERATIONS = [
-            { name: "體能特訓", delta: [40, -20, -20], desc: "體+40 / 心-20 / 戰-20" },
-            { name: "心理特訓", delta: [-20, 40, -20], desc: "體-20 / 心+40 / 戰-20" },
-            { name: "戰術特訓", delta: [-20, -20, 40], desc: "體-20 / 心-20 / 戰+40" },
-            { name: "體能與心理", delta: [20, 20, -40], desc: "體+20 / 心+20 / 戰-40" },
-            { name: "體能與戰術", delta: [20, -40, 20], desc: "體+20 / 心-40 / 戰+20" },
-            { name: "心理與戰術", delta: [-40, 20, 20], desc: "體-40 / 心+20 / 戰+20" }
+            { name: "體能特訓", delta: [40, -20, -20], desc: "體+40 / 心-20 / 戰-20", icon: "./img/train_phy.png" },
+            { name: "心智特訓", delta: [-20, 40, -20], desc: "體-20 / 心+40 / 戰-20", icon: "./img/train_men.png" },
+            { name: "戰術特訓", delta: [-20, -20, 40], desc: "體-20 / 心-20 / 戰+40", icon: "./img/train_tac.png" },
+            { name: "體能與心智", delta: [20, 20, -40], desc: "體+20 / 心+20 / 戰-40", icon: "./img/train_phymen.png" },
+            { name: "體能與戰術", delta: [20, -40, 20], desc: "體+20 / 心-40 / 戰+20", icon: "./img/train_phytac.png" },
+            { name: "心智與戰術", delta: [-40, 20, 20], desc: "體-40 / 心+20 / 戰+20", icon: "./img/train_mentac.png" }
         ];
 
         const DEFAULT_ROSTER = [
@@ -790,10 +797,15 @@
                     </div>
                     <div class="bg-slate-800 p-3 rounded-lg border border-slate-700 shadow-sm group-hover:border-indigo-500/50 transition-colors">
                         <div class="flex justify-between items-center mb-2">
-                            <h3 class="font-bold text-white text-sm">${step.op.name}</h3>
+                            <div class="flex items-center gap-3">
+                                <img src="${step.op.icon}" class="op-icon" alt="${step.op.name}">
+                                <div>
+                                    <h3 class="font-bold text-white text-sm">${step.op.name}</h3>
+                                    <div class="text-[10px] text-slate-400 mt-0.5">${step.op.desc}</div>
+                                </div>
+                            </div>
                             <span class="text-[10px] text-slate-500 font-mono bg-slate-900 px-1.5 py-0.5 rounded">${step.res.join('/')}</span>
                         </div>
-                        <div class="text-[10px] text-slate-400">${step.op.desc}</div>
                     </div>
                 `;
                 container.appendChild(el);
