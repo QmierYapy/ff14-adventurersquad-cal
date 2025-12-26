@@ -77,9 +77,12 @@
             @apply bg-slate-600;
         }
 
-        /* Cap Input Styling */
+        /* Cap Input Styling - Fixed Background */
         .cap-input {
-            @apply bg-transparent text-[10px] text-slate-400 w-8 text-center focus:outline-none focus:text-indigo-400 font-bold border-b border-dashed border-slate-600 focus:border-indigo-500;
+            @apply bg-transparent text-indigo-300 w-10 text-center text-[10px] font-bold focus:outline-none font-mono p-0 m-0 border-b border-dashed border-slate-600 focus:border-indigo-500 focus:text-indigo-400 cursor-text transition-colors;
+        }
+        .cap-wrapper {
+            @apply flex items-center gap-1 bg-slate-900 rounded px-2 py-1 border border-slate-700 transition-colors hover:border-slate-600;
         }
     </style>
 </head>
@@ -112,21 +115,25 @@
     </header>
 
     <!-- CONTENT AREA -->
+    <!-- overflow-auto allows horizontal scroll for the whole view -->
     <div class="flex-1 relative overflow-auto bg-slate-950">
         
         <!-- TAB 1: TEAM STRATEGY -->
         <div id="view-team" class="absolute inset-0 flex transition-opacity duration-300 min-w-[1024px]">
             
-            <!-- 1. Config Pane -->
-            <aside class="w-72 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 overflow-y-auto z-10 custom-scrollbar sticky left-0 h-full shadow-xl pb-6">
-                <div class="p-4 border-b border-slate-800">
+            <!-- 1. Config Pane (Removed sticky, Unified Scroll) -->
+            <!-- Note: overflow-y-auto here handles the vertical scroll for the WHOLE sidebar -->
+            <aside class="w-72 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 overflow-y-auto z-10 custom-scrollbar pb-6 shadow-xl">
+                
+                <!-- Training Status -->
+                <div class="p-4 border-b border-slate-800 shrink-0">
                     <div class="flex justify-between items-center mb-2">
                         <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">1. 當前特訓狀態</h2>
-                        <!-- 可輸入上限的 UI -->
-                        <div id="t-curr-wrapper" class="flex items-center gap-1 bg-slate-800 rounded px-2 py-0.5 border border-slate-700 transition-colors">
+                        <!-- Upper Limit Input -->
+                        <div id="t-curr-wrapper" class="cap-wrapper">
                             <span id="t-curr-sum" class="text-[10px] text-slate-500 font-mono">280</span>
-                            <span class="text-[10px] text-slate-600">/</span>
-                            <input type="number" id="t-curr-cap" class="cap-input" value="280" step="20" title="點擊修改上限 (200/280/400)">
+                            <span class="text-[10px] text-slate-600 font-bold">/</span>
+                            <input type="number" id="t-curr-cap" class="cap-input" value="280" step="20" title="點擊修改上限">
                         </div>
                     </div>
                     <div class="space-y-3">
@@ -150,7 +157,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="p-4 border-b border-slate-800">
+
+                <!-- Mission Requirements -->
+                <div class="p-4 border-b border-slate-800 shrink-0">
                     <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">2. 任務需求</h2>
                     <div class="space-y-3">
                         <div class="flex items-center gap-2 h-8">
@@ -173,13 +182,17 @@
                         </div>
                     </div>
                 </div>
-                <div class="p-4 flex-1 flex flex-col min-h-0">
+
+                <!-- Roster (No internal scroll) -->
+                <div class="p-4 shrink-0">
                     <div class="flex justify-between items-center mb-2">
                         <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">3. 隊員名冊</h2>
                         <span class="text-[10px] text-slate-600">勾選必帶</span>
                     </div>
-                    <div id="t-roster-list" class="space-y-2 overflow-y-auto pr-1 pb-4 flex-1 custom-scrollbar"></div>
-                    <button onclick="calculateTeamStrategy()" class="mt-2 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded text-sm shadow-lg active:scale-95 flex items-center justify-center gap-2 border border-indigo-500/50">
+                    <!-- This div expands naturally -->
+                    <div id="t-roster-list" class="space-y-2"></div>
+                    
+                    <button onclick="calculateTeamStrategy()" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded text-sm shadow-lg active:scale-95 flex items-center justify-center gap-2 border border-indigo-500/50">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" /></svg>
                         計算最佳方案
                     </button>
@@ -211,18 +224,20 @@
         </div>
 
         <!-- TAB 2: SOLO SIM -->
-        <div id="view-solo" class="absolute inset-0 flex transition-opacity duration-300 opacity-0 pointer-events-none min-w-[800px]">
+        <div id="view-solo" class="absolute inset-0 flex transition-opacity duration-300 opacity-0 pointer-events-none min-w-[1024px]">
             
-            <!-- 1. Config Pane -->
-            <aside class="w-80 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 overflow-y-auto z-10 shadow-xl p-6 space-y-6 sticky left-0 h-full pb-6">
-                <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+            <!-- 1. Config Pane (Removed Sticky) -->
+            <aside class="w-72 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 overflow-y-auto z-10 shadow-xl p-4 space-y-6 pb-6">
+                
+                <!-- Start Stats with Integrated Cap Setting -->
+                <div class="p-4 bg-slate-800/50 rounded-lg border border-slate-700">
                     <div class="flex justify-between items-center mb-3">
                         <h2 class="text-xs font-bold text-blue-400 uppercase tracking-wider">起點 (Start)</h2>
-                        <!-- 可輸入上限的 UI -->
-                        <div id="s-curr-wrapper" class="flex items-center gap-1 bg-slate-800 rounded px-2 py-0.5 border border-slate-700 transition-colors">
+                        <div id="s-curr-wrapper" class="cap-wrapper">
                             <span id="s-curr-sum" class="text-[10px] text-slate-500 font-mono">280</span>
-                            <span class="text-[10px] text-slate-600">/</span>
-                            <input type="number" id="s-curr-cap" class="cap-input" value="280" step="20">
+                            <span class="text-[10px] text-slate-600 font-bold">/</span>
+                            <!-- Cap Input integrated here -->
+                            <input type="number" id="s-common-cap" class="cap-input" value="280" step="20" title="修改總點數上限 (連動目標)">
                         </div>
                     </div>
                     <div class="space-y-3">
@@ -249,14 +264,14 @@
 
                 <div class="flex justify-center -my-2 opacity-30"><svg class="h-5 w-5 text-slate-400 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg></div>
 
-                <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                <!-- Target Stats -->
+                <div class="p-4 bg-slate-800/50 rounded-lg border border-slate-700">
                     <div class="flex justify-between items-center mb-3">
                         <h2 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">目標 (Target)</h2>
-                        <!-- 可輸入上限的 UI -->
-                        <div id="s-target-wrapper" class="flex items-center gap-1 bg-slate-800 rounded px-2 py-0.5 border border-slate-700 transition-colors">
+                        <div id="s-target-wrapper" class="cap-wrapper">
                             <span id="s-target-sum" class="text-[10px] text-slate-500 font-mono">280</span>
-                            <span class="text-[10px] text-slate-600">/</span>
-                            <input type="number" id="s-target-cap" class="cap-input" value="280" step="20">
+                            <span class="text-[10px] text-slate-600 font-bold">/</span>
+                            <span id="s-target-cap-display" class="text-[10px] text-indigo-300 font-bold font-mono px-1 w-8 text-center">280</span>
                         </div>
                     </div>
                     <div class="space-y-3">
@@ -287,15 +302,26 @@
                 </button>
             </aside>
 
-            <!-- 2. Result Pane -->
+            <!-- 2. Result List (Middle Bar - Added for Consistency) -->
+            <div class="w-80 bg-slate-900/50 border-r border-slate-800 flex flex-col shrink-0 z-0 custom-scrollbar pb-6">
+                <div class="p-3 border-b border-slate-800 bg-slate-900/80 backdrop-blur shrink-0 flex justify-between items-end sticky top-0 z-10">
+                    <h2 class="text-sm font-bold text-white">推演結果</h2>
+                    <div id="s-plan-status" class="text-xs text-slate-400">等待輸入...</div>
+                </div>
+                <!-- Result List Container -->
+                <div id="s-results-list" class="flex-1 overflow-y-auto p-3 space-y-2">
+                     <div class="text-center text-slate-600 py-20 text-xs border-2 border-dashed border-slate-800 rounded-lg">請點擊左側「推演轉換路徑」</div>
+                </div>
+            </div>
+
+            <!-- 3. Result Details (Right Bar) -->
             <main class="flex-1 bg-slate-950 flex flex-col min-w-0 pb-6">
                 <div class="p-4 border-b border-slate-800 bg-slate-900 shrink-0 flex justify-between items-center shadow-md z-10 sticky top-0">
-                    <h2 class="text-sm font-bold text-white flex items-center gap-2">推演結果</h2>
-                    <div id="s-plan-status" class="text-xs text-slate-400">等待輸入...</div>
+                    <h2 class="text-sm font-bold text-white flex items-center gap-2">執行步驟詳情</h2>
                 </div>
                 <div id="s-plan-container" class="flex-1 overflow-y-auto p-10 relative bg-slate-950 custom-scrollbar">
                     <div id="s-empty-state" class="absolute inset-0 flex flex-col items-center justify-center text-slate-700 opacity-60 pointer-events-none">
-                        <p class="text-lg font-light tracking-wide">輸入數值後點擊推演</p>
+                        <p class="text-lg font-light tracking-wide">請選擇左側推演結果</p>
                     </div>
                     <div id="s-steps-list" class="max-w-2xl mx-auto space-y-0"></div>
                 </div>
@@ -338,9 +364,9 @@
         // --- INIT & TABS ---
         window.onload = function() {
             renderRosterInputs();
-            updateTotalDisplay('t-curr');
-            updateTotalDisplay('s-curr');
-            updateTotalDisplay('s-target');
+            updateTotalDisplay('t-curr', 280);
+            updateTotalDisplay('s-curr', 280);
+            updateTotalDisplay('s-target', 280);
 
             // Bind listeners for totals
             ['t-curr', 's-curr', 's-target'].forEach(prefix => {
@@ -354,6 +380,17 @@
                     capInput.addEventListener('input', () => updateTotalDisplay(prefix));
                 }
             });
+
+            // Bind listener for shared cap in Solo Sim
+            const sCommonCap = document.getElementById('s-common-cap');
+            if(sCommonCap) {
+                sCommonCap.addEventListener('input', () => {
+                    // Force update for both Start and Target
+                    // We treat s-common-cap as the source of truth for cap value
+                    updateTotalDisplay('s-curr');
+                    updateTotalDisplay('s-target');
+                });
+            }
         };
 
         function switchTab(tabId) {
@@ -383,22 +420,37 @@
             ];
             const sum = vals.reduce((a,b)=>a+b,0);
             
-            // Get user defined cap
-            const capInput = document.getElementById(`${prefix}-cap`);
-            const cap = parseInt(capInput ? capInput.value : 280) || 280;
+            // Determine Cap source
+            let cap = 280;
+            let capDisplayId = null;
+
+            if (prefix === 't-curr') {
+                const capInput = document.getElementById('t-curr-cap');
+                cap = parseInt(capInput ? capInput.value : 280) || 280;
+            } else if (prefix === 's-curr' || prefix === 's-target') {
+                const commonCapInput = document.getElementById('s-common-cap');
+                cap = parseInt(commonCapInput ? commonCapInput.value : 280) || 280;
+                // Sync display for target
+                if (prefix === 's-target') {
+                    capDisplayId = 's-target-cap-display';
+                }
+            }
 
             const el = document.getElementById(`${prefix}-sum`);
             const wrapper = document.getElementById(`${prefix}-wrapper`);
             
             el.innerText = `${sum}`;
+            if (capDisplayId) {
+                document.getElementById(capDisplayId).innerText = `${cap}`;
+            }
             
             // Validation: Check if sum equals cap
             if (sum !== cap) {
-                wrapper.classList.remove('bg-slate-800', 'border-slate-700');
+                wrapper.classList.remove('bg-slate-900', 'border-slate-700');
                 wrapper.classList.add('bg-red-900/20', 'border-red-800');
                 el.classList.add('text-red-400');
             } else {
-                wrapper.classList.add('bg-slate-800', 'border-slate-700');
+                wrapper.classList.add('bg-slate-900', 'border-slate-700');
                 wrapper.classList.remove('bg-red-900/20', 'border-red-800');
                 el.classList.remove('text-red-400');
             }
@@ -588,39 +640,55 @@
             const target = getValues('s-target');
             const statusEl = document.getElementById('s-plan-status');
             const emptyEl = document.getElementById('s-empty-state');
-            const listEl = document.getElementById('s-steps-list');
+            const listContainer = document.getElementById('s-results-list');
 
             const startSum = start.reduce((a,b)=>a+b,0);
             const targetSum = target.reduce((a,b)=>a+b,0);
             
             // Get Caps
-            const startCap = parseInt(document.getElementById('s-curr-cap').value) || 280;
-            const targetCap = parseInt(document.getElementById('s-target-cap').value) || 280;
+            const commonCap = parseInt(document.getElementById('s-common-cap').value) || 280;
 
             // Solo Path Validation
-            if (startSum !== startCap) {
-                alert(`起點總和 (${startSum}) 與設定上限 (${startCap}) 不符。`);
+            if (startSum !== commonCap) {
+                alert(`起點總和 (${startSum}) 與設定上限 (${commonCap}) 不符。`);
                 return;
             }
-            if (targetSum !== targetCap) {
-                alert(`目標總和 (${targetSum}) 與設定上限 (${targetCap}) 不符。`);
-                return;
-            }
-            if (startSum !== targetSum) {
-                alert(`起點總和 (${startSum}) 與目標總和 (${targetSum}) 不一致。\n特訓無法改變總屬性點數。`);
+            if (targetSum !== commonCap) {
+                alert(`目標總和 (${targetSum}) 與設定上限 (${commonCap}) 不符。`);
                 return;
             }
 
-            listEl.innerHTML = '';
-            emptyEl.classList.add('hidden');
-            statusEl.innerText = '計算中...';
+            listContainer.innerHTML = '<div class="text-center text-slate-500 py-4"><div class="animate-spin h-5 w-5 border-2 border-indigo-500 rounded-full border-t-transparent mx-auto mb-2"></div>計算中...</div>';
 
             setTimeout(() => {
                 const result = runAStarWithPhysics(start, target);
                 statusEl.innerHTML = result.success 
-                    ? `<span class="text-emerald-400 font-bold">成功 (${result.path.length}步)</span>` 
-                    : `<span class="text-amber-400">顯示最接近路徑</span>`;
-                renderPath(result.path, target, 's-steps-list');
+                    ? `<span class="text-emerald-400 font-bold">成功</span>` 
+                    : `<span class="text-amber-400">最接近</span>`;
+                
+                // Render single result card in middle pane
+                listContainer.innerHTML = '';
+                const card = document.createElement('div');
+                card.className = "bg-slate-800 p-3 rounded border border-slate-700 cursor-pointer selected-card group transition-all";
+                card.onclick = () => renderPath(result.path, target, 's-plan-container');
+                
+                const stepBadgeColor = result.path.length === 0 ? 'text-emerald-400' : 'text-indigo-400';
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="font-bold text-white text-sm">最佳路徑</div>
+                        <div class="text-[10px] font-bold ${stepBadgeColor} bg-slate-900 px-2 py-0.5 rounded border border-slate-700 badge-step">${result.path.length} 步</div>
+                    </div>
+                    <div class="text-[10px] text-slate-500 font-mono">
+                        Target: ${target.join('/')}
+                    </div>
+                `;
+                listContainer.appendChild(card);
+                
+                // Auto render details
+                renderPath(result.path, target, 's-plan-container');
+                emptyEl.classList.add('hidden');
+
             }, 50);
         }
 
